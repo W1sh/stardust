@@ -6,16 +6,14 @@ import com.w1sh.wave.core.annotation.Profile;
 import com.w1sh.wave.core.annotation.Provides;
 import com.w1sh.wave.util.Annotations;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +21,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.reflections.ReflectionUtils.getAllMethods;
-import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.reflections.ReflectionUtils.Methods;
+import static org.reflections.scanners.Scanners.TypesAnnotated;
+import static org.reflections.util.ReflectionUtilsPredicates.withAnnotation;
 
 public class GenericComponentScanner implements ComponentScanner {
 
@@ -40,9 +39,8 @@ public class GenericComponentScanner implements ComponentScanner {
     public GenericComponentScanner(AbstractApplicationEnvironment environment, ClassDefinitionFactory classDefinitionFactory,
                                    MethodDefinitionFactory methodDefinitionFactory) {
         this.reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage(environment.getPackagePrefix()))
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                .useParallelExecutor());
+                .forPackage(environment.getPackagePrefix())
+                .setScanners(TypesAnnotated, Scanners.SubTypes, Scanners.MethodsAnnotated));
         this.classDefinitionFactory = classDefinitionFactory != null ? classDefinitionFactory : new SimpleClassDefinitionFactory();
         this.methodDefinitionFactory = methodDefinitionFactory != null ? methodDefinitionFactory : new SimpleMethodDefinitionFactory();
     }
@@ -63,7 +61,7 @@ public class GenericComponentScanner implements ComponentScanner {
 
     private List<Definition> scanClasses() {
         logger.debug("Scanning in defined package for annotated classes");
-        final Set<Class<?>> componentClasses = reflections.getTypesAnnotatedWith(Component.class);
+        final Set<Class<?>> componentClasses = reflections.get(TypesAnnotated.with(Component.class).asClass());
         componentClasses.removeAll(typesToIgnore);
         return componentClasses.stream()
                 .filter(this::isProfileActive)
@@ -73,10 +71,12 @@ public class GenericComponentScanner implements ComponentScanner {
 
     private List<Definition> scanMethods() {
         logger.debug("Scanning in defined package for annotated methods");
-        final Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
+        final Set<Class<?>> configurationClasses = reflections.get(TypesAnnotated.with(Configuration.class).asClass());
         configurationClasses.removeAll(typesToIgnore);
         return configurationClasses.stream()
-                .map(clazz -> getAllMethods(clazz, withAnnotation(Provides.class)))
+                .map(clazz -> reflections.get(Methods.of(clazz)
+                        .filter(withAnnotation(Provides.class))
+                        .as(Method.class)))
                 .flatMap(Collection::stream)
                 .filter(this::isProfileActive)
                 .map(methodDefinitionFactory::create)

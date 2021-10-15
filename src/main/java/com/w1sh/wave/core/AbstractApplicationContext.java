@@ -13,10 +13,7 @@ import com.w1sh.wave.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +53,42 @@ public abstract class AbstractApplicationContext implements Registry, Configurab
             register(alias, instance);
         }
         register(clazz, instance);
+    }
+
+    private boolean hasCircularDependency(Definition definition) {
+        final var parameters = deepScan(definition.getClazz());
+        return parameters.stream()
+                .filter(parameter -> parameter.getType().isAssignableFrom(definition.getClazz())
+                        && isDefined(parameter.getType()))
+                .anyMatch(parameter -> !isMatchingQualifierName(parameter, definition.getName()));
+    }
+
+    private boolean isMatchingQualifierName(AnnotatedElement annotatedElement, String qualifierName) {
+        return Annotations.getAnnotationOfType(annotatedElement, Qualifier.class)
+                .filter(annotation -> ((Qualifier) annotation).name().equalsIgnoreCase(qualifierName))
+                .isPresent();
+    }
+
+    private boolean isDefined(Class<?> clazz) {
+        for (Map.Entry<Class<?>, Definition> scopeClazz : definitions.entrySet()) {
+            if (clazz.isAssignableFrom(scopeClazz.getKey())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // return all the components necessary to instantiate the class
+    private List<Parameter> deepScan(Class<?> clazz) {
+        final List<Parameter> classes = new ArrayList<>();
+
+        final var constructor = ReflectionUtils.findInjectAnnotatedConstructor(clazz);
+        if (constructor != null) {
+            for (Parameter parameter : constructor.getParameters()) {
+                classes.addAll(deepScan(parameter.getType()));
+            }
+        }
+        return classes;
     }
 
     @Override
@@ -228,7 +261,7 @@ public abstract class AbstractApplicationContext implements Registry, Configurab
 
     private Object resolvePossibleNullable(Class<?> clazz, AnnotationMetadata metadata) {
         try {
-            if (metadata.hasAnnotation(Qualifier.class)) {
+            if (metadata != null && metadata.hasAnnotation(Qualifier.class)) {
                 final var name = ((Qualifier) metadata.get(Qualifier.class)).name();
                 return getComponent(name, clazz);
             } else {
@@ -236,7 +269,7 @@ public abstract class AbstractApplicationContext implements Registry, Configurab
             }
         } catch (UnsatisfiedComponentException e) {
             logger.error("No injection candidate found for class {}", clazz);
-            if (metadata.hasAnnotation(Nullable.class)) {
+            if (metadata != null && metadata.hasAnnotation(Nullable.class)) {
                 return null;
             }
             throw e;

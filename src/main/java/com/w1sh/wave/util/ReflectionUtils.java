@@ -3,15 +3,27 @@ package com.w1sh.wave.util;
 import com.w1sh.wave.core.ConstructorInjectionPoint;
 import com.w1sh.wave.core.InjectionPoint;
 import com.w1sh.wave.core.MethodInjectionPoint;
+import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.core.exception.ComponentCreationException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public final class ReflectionUtils {
 
     private ReflectionUtils(){}
+
+    public static Constructor<?> findInjectAnnotatedConstructor(Class<?> aClass) {
+        if (Modifier.isAbstract(aClass.getModifiers())) return null;
+        for (Constructor<?> constructor : aClass.getConstructors()) {
+            if (constructor.isAnnotationPresent(Inject.class)) {
+                return constructor;
+            }
+        }
+        return aClass.getConstructors()[0];
+    }
 
     public static <T> T newInstance(Class<T> clazz) {
         try {
@@ -39,7 +51,7 @@ public final class ReflectionUtils {
         }
     }
 
-    private static <T> T newInstance(Constructor<T> constructor, Object[] params) {
+    public static <T> T newInstance(Constructor<T> constructor, Object[] params) {
         try {
             return constructor.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {

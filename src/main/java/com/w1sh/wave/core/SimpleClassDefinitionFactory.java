@@ -2,6 +2,7 @@ package com.w1sh.wave.core;
 
 import com.w1sh.wave.core.annotation.*;
 import com.w1sh.wave.util.Annotations;
+import com.w1sh.wave.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class SimpleClassDefinitionFactory implements ClassDefinitionFactory {
 
         logger.debug("Creating component definition from class {}.", clazz);
         final var definition = new ComponentDefinition(clazz);
-        final var constructor = findAnnotatedConstructor(clazz);
+        final var constructor = ReflectionUtils.findInjectAnnotatedConstructor(clazz);
         definition.setPrimary(Annotations.isAnnotationPresent(clazz, Primary.class));
         definition.setConditional(Annotations.isAnnotationPresent(clazz, Conditional.class));
         definition.setPriority((Priority) Annotations.getAnnotationOfType(clazz, Priority.class).orElse(null));
@@ -46,14 +47,5 @@ public class SimpleClassDefinitionFactory implements ClassDefinitionFactory {
             }
         }
         definition.setPostConstructorMethods(postConstructorMethods);
-    }
-
-    private Constructor<?> findAnnotatedConstructor(Class<?> aClass) {
-        for (Constructor<?> constructor : aClass.getConstructors()) {
-            if (constructor.isAnnotationPresent(Inject.class)) {
-                return constructor;
-            }
-        }
-        return aClass.getConstructors()[0];
     }
 }

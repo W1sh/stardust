@@ -4,8 +4,6 @@ import java.util.List;
 
 public interface Registry {
 
-    void register(Definition definition);
-
     void register(Class<?> clazz, Object instance);
 
     void register(String name, Object instance);

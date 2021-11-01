@@ -12,7 +12,7 @@ class ProviderBindingTest {
     private final ObjectProvider<TestClass> provider = new SimpleObjectProvider<>(TestClass::new);
 
     @Test
-    void should_AlwaysReturnNewInstance_WhenInvokingGet(){
+    void should_AlwaysReturnNewInstance_WhenInvokingGet() {
         Provider<TestClass> testClassProvider = new ProviderBinding<>(provider);
 
         final TestClass testClassFirstCall = testClassProvider.get();

@@ -12,7 +12,7 @@ class LazyBindingTest {
     private final ObjectProvider<TestClass> provider = new SimpleObjectProvider<>(TestClass::new);
 
     @Test
-    void should_AlwaysReturnSameInstance_WhenInvokingGet(){
+    void should_AlwaysReturnSameInstance_WhenInvokingGet() {
         Lazy<TestClass> testClassProvider = new LazyBinding<>(provider) {
         };
 

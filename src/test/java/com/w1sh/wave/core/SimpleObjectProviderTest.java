@@ -1,6 +1,5 @@
 package com.w1sh.wave.core;
 
-import com.w1sh.wave.example.service.impl.TestClass;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

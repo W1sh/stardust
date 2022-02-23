@@ -2,6 +2,7 @@ package com.w1sh.wave.core;
 
 import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.example.service.impl.BetterCalculatorServiceImpl;
+import com.w1sh.wave.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.wave.example.service.impl.DuplicateCalculatorServiceImpl;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ class WaveContextTest {
 
     @Test
     void should_returnInjectedAnnotatedConstructor_whenOneIsPresent(){
-        final Constructor<?> constructor = waveContext.findInjectAnnotatedConstructor(MerchantServiceImpl.class);
+        final Constructor<?> constructor = waveContext.findInjectAnnotatedConstructor(CalculatorServiceImpl.class);
 
         assertNotNull(constructor);
         assertTrue(constructor.isAnnotationPresent(Inject.class));
@@ -33,10 +34,9 @@ class WaveContextTest {
     @Test
     void should_returnObjectProvider_whenGivenClassIsValid(){
         final ObjectProvider<BetterCalculatorServiceImpl> provider = waveContext.createObjectProvider(BetterCalculatorServiceImpl.class);
-        final BetterCalculatorServiceImpl betterCalculatorService = provider.singletonInstance();
-        //final ObjectProvider<BetterCalculatorServiceImpl> provider = waveContext.getProvider(BetterCalculatorServiceImpl.class, false);
 
         assertNotNull(provider);
+        assertNotNull(provider.singletonInstance());
     }
 
     @Test
@@ -45,5 +45,9 @@ class WaveContextTest {
             singleton("bean", BetterCalculatorServiceImpl.class);
             singleton(DuplicateCalculatorServiceImpl.class);
         });
+
+        assertNotNull(waveContext.instance(BetterCalculatorServiceImpl.class));
+        assertNotNull(waveContext.instance(DuplicateCalculatorServiceImpl.class));
+        assertNull(waveContext.instance(CalculatorServiceImpl.class));
     }
 }

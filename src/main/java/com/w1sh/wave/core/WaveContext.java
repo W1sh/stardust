@@ -2,7 +2,6 @@ package com.w1sh.wave.core;
 
 import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.core.annotation.Nullable;
-import com.w1sh.wave.core.annotation.Primary;
 import com.w1sh.wave.core.annotation.Qualifier;
 import com.w1sh.wave.core.binding.Lazy;
 import com.w1sh.wave.core.binding.LazyBinding;
@@ -12,7 +11,6 @@ import com.w1sh.wave.core.builder.ContextBuilder;
 import com.w1sh.wave.core.builder.ContextGroup;
 import com.w1sh.wave.core.exception.ComponentCreationException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
-import com.w1sh.wave.util.Annotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,63 +24,62 @@ public class WaveContext {
 
     private static final Logger logger = LoggerFactory.getLogger(WaveContext.class);
 
-    private final Map<Key<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
-    private final Map<Key<?>, Object> singletons = new ConcurrentHashMap<>(256);
+    private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
+    private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
 
-    public WaveContext context(ContextGroup contextGroup) {
+    public void context(ContextGroup contextGroup) {
         ContextBuilder.setStaticContext(this);
         contextGroup.apply();
         ContextBuilder.clearStaticContext();
-        return this;
     }
 
     public void register(Class<?> clazz) {
         final ObjectProvider<?> objectProvider = createObjectProvider(clazz);
-        final boolean primary = Annotations.isAnnotationPresent(clazz, Primary.class);
-        final String name = clazz.getPackageName() + "." + clazz.getSimpleName();
-        providers.put(Key.of(clazz, name, primary), objectProvider);
+        providers.put(clazz, objectProvider);
     }
 
     public void register(String name, Class<?> clazz) {
         final ObjectProvider<?> objectProvider = createObjectProvider(clazz);
-        final boolean primary = Annotations.isAnnotationPresent(clazz, Primary.class);
-        providers.put(Key.of(clazz, name, primary), objectProvider);
+        providers.put(clazz, objectProvider);
+        named.put(name, objectProvider);
     }
 
     public void register(Class<?> clazz, Object instance) {
-        register(clazz, false, instance);
-    }
-
-    public void register(Class<?> clazz, boolean primary, Object instance) {
-        final String name = clazz.getPackageName() + "." + clazz.getSimpleName();
-        singletons.put(Key.of(clazz, name, primary), instance);
+        final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
+        providers.put(clazz, objectProvider);
     }
 
     public void register(String name, Object instance) {
-        register(name, false, instance);
+        final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
+        providers.put(instance.getClass(), objectProvider);
+        named.put(name, objectProvider);
     }
 
-    public void register(String name, boolean primary, Object instance) {
-        singletons.put(Key.of(instance.getClass(), name, primary), instance);
+    @SuppressWarnings("unchecked")
+    public <T> T instance(Class<T> clazz) {
+        return providers.get(clazz) != null ? (T) providers.get(clazz).singletonInstance() : null;
+    }
+
+    public Object instance(String name) {
+        return named.get(name) != null ? named.get(name).singletonInstance() : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> ObjectProvider<T> provider(Class<T> clazz) {
+        return (ObjectProvider<T>) providers.get(clazz);
+    }
+
+    public ObjectProvider<?> provider(String name) {
+        return named.get(name);
     }
 
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> getProvider(Class<T> clazz, boolean nullable) {
-        ObjectProvider<T> primaryCandidate = null;
         final List<ObjectProvider<T>> candidates = new ArrayList<>();
-        for (Entry<Key<?>, ObjectProvider<?>> scopeClazz : providers.entrySet()) {
-            if (clazz.isAssignableFrom(scopeClazz.getKey().getType())) {
-                if (scopeClazz.getKey().isPrimary()) {
-                    if (primaryCandidate != null) throw new UnsatisfiedComponentException(
-                            "Multiple primary injection candidates found for class " + clazz);
-                    primaryCandidate = (ObjectProvider<T>) scopeClazz.getValue();
-                }
+        for (Entry<Class<?>, ObjectProvider<?>> scopeClazz : providers.entrySet()) {
+            if (clazz.isAssignableFrom(scopeClazz.getKey())) {
                 candidates.add((ObjectProvider<T>) scopeClazz.getValue());
             }
-        }
-
-        if (primaryCandidate != null) {
-            return primaryCandidate;
         }
 
         if (candidates.isEmpty()) {
@@ -99,8 +96,8 @@ public class WaveContext {
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> getProvider(String name, boolean nullable) {
         final List<ObjectProvider<T>> candidates = new ArrayList<>();
-        for (Entry<Key<?>, ObjectProvider<?>> scopeClazz : providers.entrySet()) {
-            if (scopeClazz.getKey().getName().equalsIgnoreCase(name)) {
+        for (Entry<String, ObjectProvider<?>> scopeClazz : named.entrySet()) {
+            if (scopeClazz.getKey().equalsIgnoreCase(name)) {
                 candidates.add((ObjectProvider<T>) scopeClazz.getValue());
             }
         }

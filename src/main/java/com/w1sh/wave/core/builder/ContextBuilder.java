@@ -2,6 +2,7 @@ package com.w1sh.wave.core.builder;
 
 import com.w1sh.wave.core.Configuration;
 import com.w1sh.wave.core.WaveContext;
+import com.w1sh.wave.core.condition.Condition;
 
 public class ContextBuilder {
 
@@ -39,6 +40,11 @@ public class ContextBuilder {
 
     public static void singleton(String name, Class<?> clazz) {
         staticInstance().register(name, clazz);
+    }
+
+    public static void singletonIf(Class<?> clazz, Condition condition) {
+        // TODO: condition validation, throw if condition is not met
+        staticInstance().register(clazz);
     }
 
     public static void include(Configuration configuration) {

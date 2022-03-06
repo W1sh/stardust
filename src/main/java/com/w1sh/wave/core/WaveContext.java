@@ -9,6 +9,7 @@ import com.w1sh.wave.core.binding.Provider;
 import com.w1sh.wave.core.binding.ProviderBinding;
 import com.w1sh.wave.core.builder.ContextBuilder;
 import com.w1sh.wave.core.builder.ContextGroup;
+import com.w1sh.wave.core.condition.Condition;
 import com.w1sh.wave.core.exception.ComponentCreationException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
 import org.slf4j.Logger;
@@ -53,6 +54,10 @@ public class WaveContext {
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
         providers.put(instance.getClass(), objectProvider);
         named.put(name, objectProvider);
+    }
+
+    public void registerConditionally(Class<?> clazz, Condition condition) {
+        // check if condition matches, if so register
     }
 
     @SuppressWarnings("unchecked")

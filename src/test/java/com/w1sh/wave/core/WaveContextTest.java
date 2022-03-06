@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 
 import static com.w1sh.wave.core.builder.ContextBuilder.singleton;
+import static com.w1sh.wave.core.builder.ContextBuilder.singletonIf;
+import static com.w1sh.wave.core.condition.Conditions.ifNotPresent;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WaveContextTest {
@@ -44,6 +46,7 @@ class WaveContextTest {
         waveContext.context(() -> {
             singleton("bean", BetterCalculatorServiceImpl.class);
             singleton(DuplicateCalculatorServiceImpl.class);
+            singletonIf(CalculatorServiceImpl.class, ifNotPresent(BetterCalculatorServiceImpl.class));
         });
 
         assertNotNull(waveContext.instance(BetterCalculatorServiceImpl.class));

@@ -12,6 +12,7 @@ import com.w1sh.wave.core.builder.ContextGroup;
 import com.w1sh.wave.core.condition.Condition;
 import com.w1sh.wave.core.exception.ComponentCreationException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 public class WaveContext {
 
@@ -34,26 +36,34 @@ public class WaveContext {
         ContextBuilder.clearStaticContext();
     }
 
-    public void register(Class<?> clazz) {
+    public void registerProvider(@NotNull Class<?> clazz) {
         final ObjectProvider<?> objectProvider = createObjectProvider(clazz);
         providers.put(clazz, objectProvider);
     }
 
-    public void register(String name, Class<?> clazz) {
-        final ObjectProvider<?> objectProvider = createObjectProvider(clazz);
+    public void registerProvider(@NotNull Class<?> clazz, @NotNull Supplier<?> supplier) {
+        final ObjectProvider<?> objectProvider = new SimpleObjectProvider<>(supplier);
         providers.put(clazz, objectProvider);
-        named.put(name, objectProvider);
     }
 
-    public void register(Class<?> clazz, Object instance) {
+    // reuse singletons methods ? since all need to register into provider and named
+    public void registerSingleton(@NotNull Class<?> clazz, @NotNull Object instance) {
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
         providers.put(clazz, objectProvider);
     }
 
-    public void register(String name, Object instance) {
+    public void registerSingleton(String name, @NotNull Object instance) {
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
         providers.put(instance.getClass(), objectProvider);
         named.put(name, objectProvider);
+    }
+
+    public void registerSingleton(String name, @NotNull Class<?> clazz) {
+        final var instance = createInstance(clazz);
+        processPostConstructorMethods(instance);
+        final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
+        providers.put(clazz, objectProvider);
+        if (name != null) named.put(name, objectProvider);
     }
 
     public void registerConditionally(Class<?> clazz, Condition condition) {

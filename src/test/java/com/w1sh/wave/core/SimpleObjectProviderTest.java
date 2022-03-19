@@ -16,6 +16,7 @@ class SimpleObjectProviderTest {
         final TestClass secondTestClass = provider.singletonInstance();
 
         assertEquals(testClass, secondTestClass);
+        assertEquals(1, provider.instances().size());
     }
 
     @Test

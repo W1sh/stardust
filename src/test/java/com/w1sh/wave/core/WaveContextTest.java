@@ -4,18 +4,23 @@ import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.example.service.impl.BetterCalculatorServiceImpl;
 import com.w1sh.wave.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.wave.example.service.impl.DuplicateCalculatorServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 
-import static com.w1sh.wave.core.builder.ContextBuilder.singleton;
-import static com.w1sh.wave.core.builder.ContextBuilder.singletonIf;
+import static com.w1sh.wave.core.builder.ContextBuilder.*;
 import static com.w1sh.wave.core.condition.Conditions.ifNotPresent;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WaveContextTest {
 
-    private final WaveContext waveContext = new WaveContext();
+    private WaveContext waveContext;
+
+    @BeforeEach
+    void setUp() {
+        waveContext = new WaveContext();
+    }
 
     @Test
     void should_returnNoArgConstructor_whenNoConstructorIsAvailable(){
@@ -42,7 +47,7 @@ class WaveContextTest {
     }
 
     @Test
-    void test(){
+    void should_registerSingletons_whenGivenClassesAreValid(){
         waveContext.context(() -> {
             singleton("bean", BetterCalculatorServiceImpl.class);
             singleton(DuplicateCalculatorServiceImpl.class);
@@ -52,5 +57,40 @@ class WaveContextTest {
         assertNotNull(waveContext.instance(BetterCalculatorServiceImpl.class));
         assertNotNull(waveContext.instance(DuplicateCalculatorServiceImpl.class));
         assertNull(waveContext.instance(CalculatorServiceImpl.class));
+    }
+
+    @Test
+    void should_registerSingleton_whenGivenNameAndClassAreValid(){
+        waveContext.context(() -> singleton("bean", BetterCalculatorServiceImpl.class));
+
+        final Object namedInstance = waveContext.instance("bean");
+        final BetterCalculatorServiceImpl instance = waveContext.instance(BetterCalculatorServiceImpl.class);
+        assertNotNull(namedInstance);
+        assertNotNull(instance);
+        assertEquals(instance, namedInstance);
+    }
+
+    @Test
+    void should_registerProvider_whenGivenClassesAreValid(){
+        waveContext.context(() -> provider(BetterCalculatorServiceImpl.class));
+
+        final BetterCalculatorServiceImpl actualBCalcInstance = waveContext.instance(BetterCalculatorServiceImpl.class);
+        final ObjectProvider<BetterCalculatorServiceImpl> actualBCalcProvider = waveContext.getProvider(BetterCalculatorServiceImpl.class, false);
+        assertNotNull(actualBCalcInstance);
+        assertEquals(SimpleObjectProvider.class, actualBCalcProvider.getClass());
+        assertNotEquals(actualBCalcInstance, actualBCalcProvider.newInstance());
+        assertEquals(2, actualBCalcProvider.instances().size());
+    }
+
+    @Test
+    void should_registerProvider_whenGivenClassAndSupplierAreValid(){
+        waveContext.context(() -> provider(DuplicateCalculatorServiceImpl.class));
+
+        final DuplicateCalculatorServiceImpl actualDCalcInstance = waveContext.instance(DuplicateCalculatorServiceImpl.class);
+        final ObjectProvider<DuplicateCalculatorServiceImpl> actualDCalcProvider = waveContext.getProvider(DuplicateCalculatorServiceImpl.class, false);
+        assertNotNull(actualDCalcInstance);
+        assertEquals(SimpleObjectProvider.class, actualDCalcProvider.getClass());
+        assertNotEquals(actualDCalcInstance, actualDCalcProvider.newInstance());
+        assertEquals(2, actualDCalcProvider.instances().size());
     }
 }

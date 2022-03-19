@@ -17,7 +17,7 @@ public class DefinedObjectProvider<T> implements ObjectProvider<T> {
 
     @Override
     public T newInstance() {
-        return null;
+        throw new UnsupportedOperationException("Defined object providers can not provide new instances, only a singleton instance.");
     }
 
     @Override

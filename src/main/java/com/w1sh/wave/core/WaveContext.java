@@ -29,6 +29,12 @@ public class WaveContext {
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
+    private NamingStrategy namingStrategy = new SimpleNamingStrategy();
+
+    public WaveContext namingStrategy(NamingStrategy namingStrategy){
+        this.namingStrategy = namingStrategy;
+        return this;
+    }
 
     public void context(ContextGroup contextGroup) {
         ContextBuilder.setStaticContext(this);
@@ -49,21 +55,25 @@ public class WaveContext {
     // reuse singletons methods ? since all need to register into provider and named
     public void registerSingleton(@NotNull Class<?> clazz, @NotNull Object instance) {
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
+        final String name = namingStrategy.generate(clazz);
         providers.put(clazz, objectProvider);
+        named.put(name, objectProvider);
     }
 
     public void registerSingleton(String name, @NotNull Object instance) {
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
+        final String singletonName = name != null ? name : namingStrategy.generate(instance.getClass());
         providers.put(instance.getClass(), objectProvider);
-        named.put(name, objectProvider);
+        named.put(singletonName, objectProvider);
     }
 
     public void registerSingleton(String name, @NotNull Class<?> clazz) {
         final var instance = createInstance(clazz);
         processPostConstructorMethods(instance);
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
+        final String singletonName = name != null ? name : namingStrategy.generate(instance.getClass());
         providers.put(clazz, objectProvider);
-        if (name != null) named.put(name, objectProvider);
+        named.put(singletonName, objectProvider);
     }
 
     public void registerConditionally(Class<?> clazz, Condition condition) {
@@ -237,5 +247,9 @@ public class WaveContext {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ComponentCreationException("Unable to create an instance of the class", e);
         }
+    }
+
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
     }
 }

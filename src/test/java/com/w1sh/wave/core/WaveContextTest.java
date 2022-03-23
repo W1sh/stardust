@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 
-import static com.w1sh.wave.core.builder.ContextBuilder.*;
-import static com.w1sh.wave.core.condition.Conditions.ifNotPresent;
+import static com.w1sh.wave.core.builder.ContextBuilder.provider;
+import static com.w1sh.wave.core.builder.ContextBuilder.singleton;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WaveContextTest {
@@ -23,7 +23,15 @@ class WaveContextTest {
     }
 
     @Test
-    void should_returnNoArgConstructor_whenNoConstructorIsAvailable(){
+    void should_haveSimpleNamingStrategy_whenNamingStrategyIsDefined() {
+        final SimpleNamingStrategy namingStrategy = new SimpleNamingStrategy();
+        waveContext.namingStrategy(namingStrategy);
+
+        assertEquals(waveContext.getNamingStrategy(), namingStrategy);
+    }
+
+    @Test
+    void should_returnNoArgConstructor_whenNoConstructorIsAvailable() {
         final Constructor<?> constructor = waveContext.findInjectAnnotatedConstructor(BetterCalculatorServiceImpl.class);
 
         assertNotNull(constructor);
@@ -31,7 +39,7 @@ class WaveContextTest {
     }
 
     @Test
-    void should_returnInjectedAnnotatedConstructor_whenOneIsPresent(){
+    void should_returnInjectedAnnotatedConstructor_whenOneIsPresent() {
         final Constructor<?> constructor = waveContext.findInjectAnnotatedConstructor(CalculatorServiceImpl.class);
 
         assertNotNull(constructor);
@@ -39,7 +47,7 @@ class WaveContextTest {
     }
 
     @Test
-    void should_returnObjectProvider_whenGivenClassIsValid(){
+    void should_returnObjectProvider_whenGivenClassIsValid() {
         final ObjectProvider<BetterCalculatorServiceImpl> provider = waveContext.createObjectProvider(BetterCalculatorServiceImpl.class);
 
         assertNotNull(provider);
@@ -47,20 +55,19 @@ class WaveContextTest {
     }
 
     @Test
-    void should_registerSingletons_whenGivenClassesAreValid(){
-        waveContext.context(() -> {
-            singleton("bean", BetterCalculatorServiceImpl.class);
-            singleton(DuplicateCalculatorServiceImpl.class);
-            singletonIf(CalculatorServiceImpl.class, ifNotPresent(BetterCalculatorServiceImpl.class));
-        });
+    void should_registerSingleton_whenGivenClassIsValid() {
+        waveContext.namingStrategy(new SimpleNamingStrategy())
+                .context(() -> singleton(BetterCalculatorServiceImpl.class));
 
-        assertNotNull(waveContext.instance(BetterCalculatorServiceImpl.class));
-        assertNotNull(waveContext.instance(DuplicateCalculatorServiceImpl.class));
-        assertNull(waveContext.instance(CalculatorServiceImpl.class));
+        final Object namedInstance = waveContext.instance("betterCalculatorServiceImpl");
+        final BetterCalculatorServiceImpl instance = waveContext.instance(BetterCalculatorServiceImpl.class);
+        assertNotNull(namedInstance);
+        assertNotNull(instance);
+        assertEquals(instance, namedInstance);
     }
 
     @Test
-    void should_registerSingleton_whenGivenNameAndClassAreValid(){
+    void should_registerSingleton_whenGivenNameAndClassAreValid() {
         waveContext.context(() -> singleton("bean", BetterCalculatorServiceImpl.class));
 
         final Object namedInstance = waveContext.instance("bean");
@@ -71,7 +78,7 @@ class WaveContextTest {
     }
 
     @Test
-    void should_registerProvider_whenGivenClassesAreValid(){
+    void should_registerProvider_whenGivenClassesAreValid() {
         waveContext.context(() -> provider(BetterCalculatorServiceImpl.class));
 
         final BetterCalculatorServiceImpl actualBCalcInstance = waveContext.instance(BetterCalculatorServiceImpl.class);
@@ -83,7 +90,7 @@ class WaveContextTest {
     }
 
     @Test
-    void should_registerProvider_whenGivenClassAndSupplierAreValid(){
+    void should_registerProvider_whenGivenClassAndSupplierAreValid() {
         waveContext.context(() -> provider(DuplicateCalculatorServiceImpl.class));
 
         final DuplicateCalculatorServiceImpl actualDCalcInstance = waveContext.instance(DuplicateCalculatorServiceImpl.class);

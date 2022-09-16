@@ -1,13 +1,18 @@
 package com.w1sh.wave.core;
 
 import com.w1sh.wave.core.annotation.Inject;
+import com.w1sh.wave.core.exception.CircularDependencyException;
+import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
 import com.w1sh.wave.example.service.impl.BetterCalculatorServiceImpl;
 import com.w1sh.wave.example.service.impl.CalculatorServiceImpl;
+import com.w1sh.wave.example.service.impl.CircularDependantClass;
 import com.w1sh.wave.example.service.impl.DuplicateCalculatorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.w1sh.wave.core.builder.ContextBuilder.provider;
 import static com.w1sh.wave.core.builder.ContextBuilder.singleton;
@@ -20,6 +25,25 @@ class WaveContextTest {
     @BeforeEach
     void setUp() {
         waveContext = new WaveContext();
+    }
+
+    @Test
+    void should_returnNull_whenNoComponentIsDefined() {
+        waveContext.context(() -> singleton(BetterCalculatorServiceImpl.class));
+
+        final Object instance = waveContext.instanceOrNull(DuplicateCalculatorServiceImpl.class);
+        final Object namedInstance = waveContext.instanceOrNull("MissingComponent");
+
+        assertNull(instance);
+        assertNull(namedInstance);
+    }
+
+    @Test
+    void should_throwException_whenNoComponentIsDefined() {
+        waveContext.context(() -> singleton(BetterCalculatorServiceImpl.class));
+
+        assertThrows(UnsatisfiedComponentException.class, () -> waveContext.instance(DuplicateCalculatorServiceImpl.class));
+        assertThrows(UnsatisfiedComponentException.class, () -> waveContext.instance("MissingComponent"));
     }
 
     @Test
@@ -48,7 +72,7 @@ class WaveContextTest {
 
     @Test
     void should_returnObjectProvider_whenGivenClassIsValid() {
-        final ObjectProvider<BetterCalculatorServiceImpl> provider = waveContext.createObjectProvider(BetterCalculatorServiceImpl.class);
+        final ObjectProvider<BetterCalculatorServiceImpl> provider = waveContext.createObjectProvider(BetterCalculatorServiceImpl.class, new HashSet<>());
 
         assertNotNull(provider);
         assertNotNull(provider.singletonInstance());
@@ -99,5 +123,14 @@ class WaveContextTest {
         assertEquals(SimpleObjectProvider.class, actualDCalcProvider.getClass());
         assertNotEquals(actualDCalcInstance, actualDCalcProvider.newInstance());
         assertEquals(2, actualDCalcProvider.instances().size());
+    }
+
+    @Test
+    void should_throwCircularDependencyInjection_whenAttemptingMultipleInitializationsOfSameClass() {
+        final Set<Class<?>> initializationChain = new HashSet<>();
+        initializationChain.add(CircularDependantClass.class);
+        final ObjectProvider<CircularDependantClass> objectProvider = waveContext.createObjectProvider(CircularDependantClass.class, initializationChain);
+
+        assertThrows(CircularDependencyException.class, objectProvider::newInstance);
     }
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class SimpleObjectProvider<T> implements ObjectProvider<T> {
+public final class SimpleObjectProvider<T> implements ObjectProvider<T> {
 
     private final Supplier<T> supplier;
     private final List<T> instances;

@@ -2,7 +2,7 @@ package com.w1sh.wave.core;
 
 import java.util.List;
 
-public class DefinedObjectProvider<T> implements ObjectProvider<T> {
+public final class DefinedObjectProvider<T> implements ObjectProvider<T> {
 
     private final T instance;
 

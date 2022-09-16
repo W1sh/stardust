@@ -1,7 +1,6 @@
 package com.w1sh.wave.core;
 
 import com.w1sh.wave.core.annotation.Inject;
-import com.w1sh.wave.core.annotation.Nullable;
 import com.w1sh.wave.core.annotation.Qualifier;
 import com.w1sh.wave.core.binding.Lazy;
 import com.w1sh.wave.core.binding.LazyBinding;
@@ -10,6 +9,7 @@ import com.w1sh.wave.core.binding.ProviderBinding;
 import com.w1sh.wave.core.builder.ContextBuilder;
 import com.w1sh.wave.core.builder.ContextGroup;
 import com.w1sh.wave.core.condition.Condition;
+import com.w1sh.wave.core.exception.CircularDependencyException;
 import com.w1sh.wave.core.exception.ComponentCreationException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class WaveContext {
 
@@ -43,7 +44,10 @@ public class WaveContext {
     }
 
     public void registerProvider(@NotNull Class<?> clazz) {
-        final ObjectProvider<?> objectProvider = createObjectProvider(clazz);
+        final Set<Class<?>> initializationChain = new HashSet<>();
+        initializationChain.add(clazz);
+
+        final ObjectProvider<?> objectProvider = createObjectProvider(clazz, initializationChain);
         providers.put(clazz, objectProvider);
     }
 
@@ -68,7 +72,10 @@ public class WaveContext {
     }
 
     public void registerSingleton(String name, @NotNull Class<?> clazz) {
-        final var instance = createInstance(clazz);
+        final Set<Class<?>> initializationChain = new HashSet<>();
+        initializationChain.add(clazz);
+
+        final var instance = createInstance(clazz, initializationChain);
         processPostConstructorMethods(instance);
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
         final String singletonName = name != null ? name : namingStrategy.generate(instance.getClass());
@@ -82,10 +89,29 @@ public class WaveContext {
 
     @SuppressWarnings("unchecked")
     public <T> T instance(Class<T> clazz) {
+        final ObjectProvider<T> provider = (ObjectProvider<T>) providers.get(clazz);
+        if (provider == null) {
+            logger.error("No component candidate found for class {}", clazz);
+            throw new UnsatisfiedComponentException("No component candidate found for class " + clazz);
+        }
+        return provider.singletonInstance();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T instanceOrNull(Class<T> clazz) {
         return providers.get(clazz) != null ? (T) providers.get(clazz).singletonInstance() : null;
     }
 
     public Object instance(String name) {
+        final ObjectProvider<?> namedProvider = named.get(name);
+        if (namedProvider == null) {
+            logger.error("No component candidate found for name {}", name);
+            throw new UnsatisfiedComponentException("No component candidate found for name " + name);
+        }
+        return namedProvider.singletonInstance();
+    }
+
+    public Object instanceOrNull(String name) {
         return named.get(name) != null ? named.get(name).singletonInstance() : null;
     }
 
@@ -186,44 +212,61 @@ public class WaveContext {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> ObjectProvider<T> createObjectProvider(Class<T> clazz) {
+    protected <T> ObjectProvider<T> createObjectProvider(Class<T> clazz, Set<Class<?>> chain) {
         return new SimpleObjectProvider<>(() -> {
-            final var instance = createInstance(clazz);
+            final var instance = createInstance(clazz, chain);
             processPostConstructorMethods(instance);
             return (T) instance;
         });
     }
 
-    private <T> Object createInstance(Class<T> clazz) {
+    private <T> Object createInstance(Class<T> clazz, Set<Class<?>> chain) {
         final Constructor<T> constructor = findInjectAnnotatedConstructor(clazz);
         if (constructor.getParameterTypes().length == 0) {
             logger.debug("Creating new instance of class {}", clazz.getName());
             return newInstance(constructor, new Object[]{});
         }
 
+        if (chain.contains(clazz)) {
+            throw new CircularDependencyException(String.format("Can't create instance of class %s. Circular dependency: %s",
+                    clazz.getName(), createCircularDependencyChain(chain, clazz)));
+        }
+
         final Object[] params = new Object[constructor.getParameterTypes().length];
         for (int i = 0; i < constructor.getParameterTypes().length; i++) {
             final Type paramType = constructor.getGenericParameterTypes()[i];
-            final Parameter parameter = constructor.getParameters()[i];
+            final Class<?> actualParameterType = getActualParameterType(paramType);
+            final String qualifier = getParameterQualifier(constructor.getParameters()[i]);
+            final ObjectProvider<?> provider = qualifier != null ?
+                    getProvider(qualifier, false) : getProvider(actualParameterType, false);
 
-            if (isWrappedInBinding(paramType)) {
-                params[i] = createBinding((ParameterizedType) paramType);
+            if (provider == null) {
+                logger.info("No candidate found for required parameter {}. Registering for initialization.", actualParameterType.getName());
+                registerSingleton(qualifier, actualParameterType);
+                params[i] = getProvider(actualParameterType, false);
             } else {
-                final boolean nullable = parameter.isAnnotationPresent(Nullable.class);
-                if (parameter.isAnnotationPresent(Qualifier.class)) {
-                    final String name = parameter.getAnnotation(Qualifier.class).name();
-                    params[i] = getProvider(name, nullable);
+                if (isWrappedInBinding(paramType)) {
+                    params[i] = createBinding((ParameterizedType) paramType);
                 } else {
-                    params[i] = getProvider((Class<?>) paramType, nullable).singletonInstance();
+                    params[i] = provider.singletonInstance();
                 }
             }
         }
         return newInstance(constructor, params);
     }
 
+    private Class<?> getActualParameterType(Type paramType){
+        return isWrappedInBinding(paramType) ? (Class<?>) ((ParameterizedType) paramType).getActualTypeArguments()[0] : (Class<?>) paramType;
+    }
+
+    private String getParameterQualifier(Parameter parameter) {
+        if (parameter.isAnnotationPresent(Qualifier.class) && !parameter.getAnnotation(Qualifier.class).name().isBlank()) {
+            return parameter.getAnnotation(Qualifier.class).name();
+        } else return null;
+    }
+
     private boolean isWrappedInBinding(Type type) {
-        if (type instanceof ParameterizedType) {
-            final ParameterizedType parameterizedType = ((ParameterizedType) type);
+        if (type instanceof ParameterizedType parameterizedType) {
             return parameterizedType.getRawType().equals(Lazy.class) || parameterizedType.getRawType().equals(Provider.class);
         }
         return false;
@@ -239,6 +282,12 @@ public class WaveContext {
             return new ProviderBinding<>(provider);
         }
         throw new ComponentCreationException(String.format("Unknown binding type %s", type.getRawType()));
+    }
+
+    private String createCircularDependencyChain(Set<Class<?>> chain, Class<?> clazz) {
+        return chain.stream()
+                .map(chainClazz -> chainClazz.getSimpleName() + " -> ")
+                .collect(Collectors.joining("", "", clazz.getSimpleName()));
     }
 
     private <T> T newInstance(Constructor<T> constructor, Object[] params) {

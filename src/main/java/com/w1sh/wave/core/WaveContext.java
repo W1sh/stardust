@@ -8,6 +8,7 @@ import com.w1sh.wave.core.binding.Provider;
 import com.w1sh.wave.core.binding.ProviderBinding;
 import com.w1sh.wave.core.builder.ContextBuilder;
 import com.w1sh.wave.core.builder.ContextGroup;
+import com.w1sh.wave.core.builder.Options;
 import com.w1sh.wave.core.condition.Condition;
 import com.w1sh.wave.core.exception.CircularDependencyException;
 import com.w1sh.wave.core.exception.ComponentCreationException;
@@ -32,7 +33,7 @@ public class WaveContext {
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
     private NamingStrategy namingStrategy = new SimpleNamingStrategy();
 
-    public WaveContext namingStrategy(NamingStrategy namingStrategy){
+    public WaveContext namingStrategy(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         return this;
     }
@@ -56,29 +57,21 @@ public class WaveContext {
         providers.put(clazz, objectProvider);
     }
 
-    // reuse singletons methods ? since all need to register into provider and named
-    public void registerSingleton(@NotNull Class<?> clazz, @NotNull Object instance) {
+    public void registerSingleton(@NotNull Object instance, Options options) {
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String name = namingStrategy.generate(clazz);
-        providers.put(clazz, objectProvider);
-        named.put(name, objectProvider);
-    }
-
-    public void registerSingleton(String name, @NotNull Object instance) {
-        final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String singletonName = name != null ? name : namingStrategy.generate(instance.getClass());
+        final String singletonName = options != null ? options.getName() : namingStrategy.generate(instance.getClass());
         providers.put(instance.getClass(), objectProvider);
         named.put(singletonName, objectProvider);
     }
 
-    public void registerSingleton(String name, @NotNull Class<?> clazz) {
+    public void registerSingleton(@NotNull Class<?> clazz, Options options) {
         final Set<Class<?>> initializationChain = new HashSet<>();
         initializationChain.add(clazz);
 
         final var instance = createInstance(clazz, initializationChain);
         processPostConstructorMethods(instance);
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String singletonName = name != null ? name : namingStrategy.generate(instance.getClass());
+        final String singletonName = options != null ? options.getName() : namingStrategy.generate(instance.getClass());
         providers.put(clazz, objectProvider);
         named.put(singletonName, objectProvider);
     }
@@ -242,7 +235,7 @@ public class WaveContext {
 
             if (provider == null) {
                 logger.info("No candidate found for required parameter {}. Registering for initialization.", actualParameterType.getName());
-                registerSingleton(qualifier, actualParameterType);
+                registerSingleton(actualParameterType, Options.builder().withName(qualifier));
                 params[i] = getProvider(actualParameterType, false);
             } else {
                 if (isWrappedInBinding(paramType)) {
@@ -255,7 +248,7 @@ public class WaveContext {
         return newInstance(constructor, params);
     }
 
-    private Class<?> getActualParameterType(Type paramType){
+    private Class<?> getActualParameterType(Type paramType) {
         return isWrappedInBinding(paramType) ? (Class<?>) ((ParameterizedType) paramType).getActualTypeArguments()[0] : (Class<?>) paramType;
     }
 

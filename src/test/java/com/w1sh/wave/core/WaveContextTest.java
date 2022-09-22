@@ -1,6 +1,7 @@
 package com.w1sh.wave.core;
 
 import com.w1sh.wave.core.annotation.Inject;
+import com.w1sh.wave.core.builder.Options;
 import com.w1sh.wave.core.exception.CircularDependencyException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
 import com.w1sh.wave.example.service.impl.BetterCalculatorServiceImpl;
@@ -92,7 +93,7 @@ class WaveContextTest {
 
     @Test
     void should_registerSingleton_whenGivenNameAndClassAreValid() {
-        waveContext.context(() -> singleton("bean", BetterCalculatorServiceImpl.class));
+        waveContext.context(() -> singleton(BetterCalculatorServiceImpl.class, Options.builder().withName("bean")));
 
         final Object namedInstance = waveContext.instance("bean");
         final BetterCalculatorServiceImpl instance = waveContext.instance(BetterCalculatorServiceImpl.class);

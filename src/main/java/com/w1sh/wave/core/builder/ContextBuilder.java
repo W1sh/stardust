@@ -28,20 +28,20 @@ public class ContextBuilder {
         staticContext.remove();
     }
 
-    public static void singleton(Object instance) {
-        staticInstance().registerSingleton(instance.getClass(), instance);
+    public static void singleton(Object instance, Options options) {
+        staticInstance().registerSingleton(instance, options);
     }
 
-    public static void singleton(String name, Object instance) {
-        staticInstance().registerSingleton(name, instance);
+    public static void singleton(Object instance) {
+        singleton(instance, null);
+    }
+
+    public static void singleton(Class<?> clazz, Options options) {
+        staticInstance().registerSingleton(clazz, options);
     }
 
     public static void singleton(Class<?> clazz) {
-        staticInstance().registerSingleton((String) null, clazz);
-    }
-
-    public static void singleton(String name, Class<?> clazz) {
-        staticInstance().registerSingleton(name, clazz);
+        singleton(clazz, null);
     }
 
     public static void provider(Class<?> clazz) { staticInstance().registerProvider(clazz); }
@@ -50,12 +50,12 @@ public class ContextBuilder {
 
     public static void singletonIf(Class<?> clazz, Condition condition) {
         // TODO: condition validation, throw if condition is not met
-        staticInstance().registerSingleton((String) null, clazz);
+
     }
     
     public static void singletonIf(String name, Class<?> clazz, Condition condition) {
         // TODO: condition validation, throw if condition is not met
-        staticInstance().registerSingleton(name, clazz);
+
     }
 
     public static void include(Configuration configuration) {

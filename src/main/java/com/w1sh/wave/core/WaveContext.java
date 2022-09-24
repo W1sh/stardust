@@ -30,10 +30,16 @@ public class WaveContext {
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
+    private Set<String> activeProfiles = new HashSet<>(8);
     private NamingStrategy namingStrategy = new SimpleNamingStrategy();
 
     public WaveContext namingStrategy(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
+        return this;
+    }
+
+    public WaveContext activeProfiles(String... profiles) {
+        this.activeProfiles = Set.of(profiles);
         return this;
     }
 
@@ -57,20 +63,28 @@ public class WaveContext {
     }
 
     public void registerSingleton(@NotNull Object instance, Options options) {
+        if (!isContainedWithinActiveProfiles(options)) {
+            logger.debug("Skipping registration of   instance of class {}", instance.getClass().getSimpleName());
+            return;
+        }
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String singletonName = options != null ? options.getName() : namingStrategy.generate(instance.getClass());
+        final String singletonName = isNameDefined(options) ? options.getName() : namingStrategy.generate(instance.getClass());
         providers.put(instance.getClass(), objectProvider);
         named.put(singletonName, objectProvider);
     }
 
     public void registerSingleton(@NotNull Class<?> clazz, Options options) {
+        if (!isContainedWithinActiveProfiles(options)) {
+            logger.debug("Skipping registration of class {}", clazz.getSimpleName());
+            return;
+        }
         final Set<Class<?>> initializationChain = new HashSet<>();
         initializationChain.add(clazz);
 
         final var instance = createInstance(clazz, initializationChain);
         processPostConstructorMethods(instance);
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String singletonName = options != null ? options.getName() : namingStrategy.generate(instance.getClass());
+        final String singletonName = isNameDefined(options) ? options.getName() : namingStrategy.generate(instance.getClass());
         providers.put(clazz, objectProvider);
         named.put(singletonName, objectProvider);
     }
@@ -284,6 +298,16 @@ public class WaveContext {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ComponentCreationException("Unable to create an instance of the class", e);
         }
+    }
+
+    private boolean isContainedWithinActiveProfiles(Options options) {
+        if (activeProfiles.isEmpty()) return true;
+        return options != null && options.getProfiles() != null && Arrays.stream(options.getProfiles())
+                .anyMatch(element -> activeProfiles.contains(element));
+    }
+
+    private boolean isNameDefined(Options options) {
+        return options != null && options.getName() != null && !options.getName().isBlank();
     }
 
     public NamingStrategy getNamingStrategy() {

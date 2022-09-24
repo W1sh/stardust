@@ -2,7 +2,6 @@ package com.w1sh.wave.core.builder;
 
 import com.w1sh.wave.core.Configuration;
 import com.w1sh.wave.core.WaveContext;
-import com.w1sh.wave.core.condition.Condition;
 
 import java.util.function.Supplier;
 
@@ -10,7 +9,8 @@ public class ContextBuilder {
 
     private static final ThreadLocal<WaveContext> staticContext = new ThreadLocal<>();
 
-    private ContextBuilder() {}
+    private ContextBuilder() {
+    }
 
     public static WaveContext staticInstance() {
         WaveContext context = staticContext.get();
@@ -44,18 +44,12 @@ public class ContextBuilder {
         singleton(clazz, null);
     }
 
-    public static void provider(Class<?> clazz) { staticInstance().registerProvider(clazz); }
-
-    public static <T> void provider(Class<T> clazz, Supplier<T> supplier) { staticInstance().registerProvider(clazz, supplier); }
-
-    public static void singletonIf(Class<?> clazz, Condition condition) {
-        // TODO: condition validation, throw if condition is not met
-
+    public static void provider(Class<?> clazz) {
+        staticInstance().registerProvider(clazz);
     }
-    
-    public static void singletonIf(String name, Class<?> clazz, Condition condition) {
-        // TODO: condition validation, throw if condition is not met
 
+    public static <T> void provider(Class<T> clazz, Supplier<T> supplier) {
+        staticInstance().registerProvider(clazz, supplier);
     }
 
     public static void include(Configuration configuration) {

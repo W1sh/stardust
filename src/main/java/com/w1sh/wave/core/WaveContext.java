@@ -9,7 +9,6 @@ import com.w1sh.wave.core.binding.ProviderBinding;
 import com.w1sh.wave.core.builder.ContextBuilder;
 import com.w1sh.wave.core.builder.ContextGroup;
 import com.w1sh.wave.core.builder.Options;
-import com.w1sh.wave.core.condition.Condition;
 import com.w1sh.wave.core.exception.CircularDependencyException;
 import com.w1sh.wave.core.exception.ComponentCreationException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
@@ -74,10 +73,6 @@ public class WaveContext {
         final String singletonName = options != null ? options.getName() : namingStrategy.generate(instance.getClass());
         providers.put(clazz, objectProvider);
         named.put(singletonName, objectProvider);
-    }
-
-    public void registerConditionally(Class<?> clazz, Condition condition) {
-        // check if condition matches, if so register
     }
 
     @SuppressWarnings("unchecked")

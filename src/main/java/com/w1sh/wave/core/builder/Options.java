@@ -5,6 +5,7 @@ public class Options {
     private String name;
     private Class<?>[] requiredClasses;
     private Class<?>[] requiredMissingClasses;
+    private String[] profiles;
 
 
     public static Options builder() {
@@ -26,6 +27,11 @@ public class Options {
         return this;
     }
 
+    public Options profiles(String... profiles) {
+        this.profiles = profiles;
+        return this;
+    }
+
     public String getName() {
         return name;
     }
@@ -36,5 +42,9 @@ public class Options {
 
     public Class<?>[] getRequiredMissingClasses() {
         return requiredMissingClasses;
+    }
+
+    public String[] getProfiles() {
+        return profiles;
     }
 }

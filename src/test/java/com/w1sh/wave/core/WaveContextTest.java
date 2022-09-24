@@ -134,4 +134,22 @@ class WaveContextTest {
 
         assertThrows(CircularDependencyException.class, objectProvider::newInstance);
     }
+
+    @Test
+    void should_notRegisterSingleton_whenNotInsertedInActiveProfiles() {
+        waveContext.activeProfiles("Test")
+                .context(() -> singleton(DuplicateCalculatorServiceImpl.class));
+
+        final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instanceOrNull(DuplicateCalculatorServiceImpl.class);
+        assertNull(dCalcInstance);
+    }
+
+    @Test
+    void should_registerSingleton_whenInsertedInActiveProfiles() {
+        waveContext.activeProfiles("Test")
+                .context(() -> singleton(DuplicateCalculatorServiceImpl.class, Options.builder().profiles("Test")));
+
+        final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instance(DuplicateCalculatorServiceImpl.class);
+        assertNotNull(dCalcInstance);
+    }
 }

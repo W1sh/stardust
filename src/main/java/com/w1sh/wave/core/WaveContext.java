@@ -30,6 +30,8 @@ public class WaveContext {
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
+    private final Map<Class<?>, Options> delayedClassInitializations = new ConcurrentHashMap<>(256);
+    private final Map<Object, Options> delayedRegistrations = new ConcurrentHashMap<>(256);
     private Set<String> activeProfiles = new HashSet<>(8);
     private NamingStrategy namingStrategy = new SimpleNamingStrategy();
 
@@ -46,6 +48,7 @@ public class WaveContext {
     public void context(ContextGroup contextGroup) {
         ContextBuilder.setStaticContext(this);
         contextGroup.apply();
+        handleDelayedRegistrationsAndClassInitializations();
         ContextBuilder.clearStaticContext();
     }
 
@@ -64,18 +67,31 @@ public class WaveContext {
 
     public void registerSingleton(@NotNull Object instance, Options options) {
         if (!isContainedWithinActiveProfiles(options)) {
-            logger.debug("Skipping registration of   instance of class {}", instance.getClass().getSimpleName());
+            logger.debug("Skipping registration of instance of class {} as it is not active in the current profile",
+                    instance.getClass().getSimpleName());
+            return;
+        }
+        if (options != null && options.isConditional() && !delayedRegistrations.containsKey(instance)) {
+            logger.debug("Delaying registration of instance of class {} as it requires other instances to be present",
+                    instance.getClass().getSimpleName());
+            delayedRegistrations.put(instance, options);
             return;
         }
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String singletonName = isNameDefined(options) ? options.getName() : namingStrategy.generate(instance.getClass());
+        final String singletonName = isNameDefined(options) ? options.name() : namingStrategy.generate(instance.getClass());
         providers.put(instance.getClass(), objectProvider);
         named.put(singletonName, objectProvider);
     }
 
     public void registerSingleton(@NotNull Class<?> clazz, Options options) {
         if (!isContainedWithinActiveProfiles(options)) {
-            logger.debug("Skipping registration of class {}", clazz.getSimpleName());
+            logger.debug("Skipping registration of class {} as it is not active in the current profile", clazz.getSimpleName());
+            return;
+        }
+        if (options != null && options.isConditional() && !delayedClassInitializations.containsKey(clazz)) {
+            logger.debug("Delaying registration of instance of class {} as it requires other instances to be present",
+                    clazz.getSimpleName());
+            delayedClassInitializations.put(clazz, options);
             return;
         }
         final Set<Class<?>> initializationChain = new HashSet<>();
@@ -84,7 +100,7 @@ public class WaveContext {
         final var instance = createInstance(clazz, initializationChain);
         processPostConstructorMethods(instance);
         final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(instance);
-        final String singletonName = isNameDefined(options) ? options.getName() : namingStrategy.generate(instance.getClass());
+        final String singletonName = isNameDefined(options) ? options.name() : namingStrategy.generate(instance.getClass());
         providers.put(clazz, objectProvider);
         named.put(singletonName, objectProvider);
     }
@@ -244,7 +260,9 @@ public class WaveContext {
 
             if (provider == null) {
                 logger.info("No candidate found for required parameter {}. Registering for initialization.", actualParameterType.getName());
-                registerSingleton(actualParameterType, Options.builder().withName(qualifier));
+                registerSingleton(actualParameterType, Options.builder()
+                        .withName(qualifier)
+                        .build());
                 params[i] = getProvider(actualParameterType, false);
             } else {
                 if (isWrappedInBinding(paramType)) {
@@ -302,12 +320,40 @@ public class WaveContext {
 
     private boolean isContainedWithinActiveProfiles(Options options) {
         if (activeProfiles.isEmpty()) return true;
-        return options != null && options.getProfiles() != null && Arrays.stream(options.getProfiles())
+        return options != null && options.profiles() != null && Arrays.stream(options.profiles())
                 .anyMatch(element -> activeProfiles.contains(element));
     }
 
     private boolean isNameDefined(Options options) {
-        return options != null && options.getName() != null && !options.getName().isBlank();
+        return options != null && options.name() != null && !options.name().isBlank();
+    }
+
+    private void handleDelayedRegistrationsAndClassInitializations() {
+        delayedRegistrations.forEach((key, value) -> {
+            boolean hasRequiredClasses = Arrays.stream(value.requiredClasses())
+                    .allMatch(providers::containsKey);
+            boolean hasRequiredMissingClasses = Arrays.stream(value.requiredMissingClasses())
+                    .noneMatch(providers::containsKey);
+            if (hasRequiredClasses && hasRequiredMissingClasses) {
+                registerSingleton(key, value);
+            } else {
+                logger.debug("Failed to register instance of class {} as the conditions required were not met",
+                        key.getClass().getSimpleName());
+            }
+        });
+
+        delayedClassInitializations.forEach((key, value) -> {
+            boolean hasRequiredClasses = Arrays.stream(value.requiredClasses())
+                    .allMatch(providers::containsKey);
+            boolean hasRequiredMissingClasses = Arrays.stream(value.requiredMissingClasses())
+                    .noneMatch(providers::containsKey);
+            if (hasRequiredClasses && hasRequiredMissingClasses) {
+                registerSingleton(key, value);
+            } else {
+                logger.debug("Failed to register class {} for initialization as the conditions required were not met",
+                        key.getSimpleName());
+            }
+        });
     }
 
     public NamingStrategy getNamingStrategy() {

@@ -4,10 +4,7 @@ import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.core.builder.Options;
 import com.w1sh.wave.core.exception.CircularDependencyException;
 import com.w1sh.wave.core.exception.UnsatisfiedComponentException;
-import com.w1sh.wave.example.service.impl.BetterCalculatorServiceImpl;
-import com.w1sh.wave.example.service.impl.CalculatorServiceImpl;
-import com.w1sh.wave.example.service.impl.CircularDependantClass;
-import com.w1sh.wave.example.service.impl.DuplicateCalculatorServiceImpl;
+import com.w1sh.wave.example.service.impl.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,7 +90,9 @@ class WaveContextTest {
 
     @Test
     void should_registerSingleton_whenGivenNameAndClassAreValid() {
-        waveContext.context(() -> singleton(BetterCalculatorServiceImpl.class, Options.builder().withName("bean")));
+        waveContext.context(() -> singleton(BetterCalculatorServiceImpl.class, Options.builder()
+                .withName("bean")
+                .build()));
 
         final Object namedInstance = waveContext.instance("bean");
         final BetterCalculatorServiceImpl instance = waveContext.instance(BetterCalculatorServiceImpl.class);
@@ -147,9 +146,65 @@ class WaveContextTest {
     @Test
     void should_registerSingleton_whenInsertedInActiveProfiles() {
         waveContext.activeProfiles("Test")
-                .context(() -> singleton(DuplicateCalculatorServiceImpl.class, Options.builder().profiles("Test")));
+                .context(() -> singleton(DuplicateCalculatorServiceImpl.class, Options.builder()
+                        .profiles("Test")
+                        .build()));
 
         final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instance(DuplicateCalculatorServiceImpl.class);
         assertNotNull(dCalcInstance);
+    }
+
+    @Test
+    void should_registerSingleton_whenClassRequiresAnotherRegisteredComponent() {
+        waveContext.context(() -> {
+            singleton(DuplicateCalculatorServiceImpl.class);
+            singleton(TestClass.class, Options.builder()
+                    .conditionalOn(DuplicateCalculatorServiceImpl.class)
+                    .build());
+        });
+
+        final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instance(DuplicateCalculatorServiceImpl.class);
+        final TestClass testInstance = waveContext.instance(TestClass.class);
+        assertNotNull(dCalcInstance);
+        assertNotNull(testInstance);
+    }
+
+    @Test
+    void should_notRegisterSingleton_whenClassRequiresMissingComponent() {
+        waveContext.context(() -> singleton(TestClass.class, Options.builder()
+                .conditionalOn(DuplicateCalculatorServiceImpl.class)
+                .build()));
+
+        final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instanceOrNull(DuplicateCalculatorServiceImpl.class);
+        final TestClass testInstance = waveContext.instanceOrNull(TestClass.class);
+        assertNull(dCalcInstance);
+        assertNull(testInstance);
+    }
+
+    @Test
+    void should_registerSingleton_whenClassRequiresComponentToBeMissing() {
+        waveContext.context(() -> singleton(TestClass.class, Options.builder()
+                .conditionalOnMissing(DuplicateCalculatorServiceImpl.class)
+                .build()));
+
+        final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instanceOrNull(DuplicateCalculatorServiceImpl.class);
+        final TestClass testInstance = waveContext.instance(TestClass.class);
+        assertNull(dCalcInstance);
+        assertNotNull(testInstance);
+    }
+
+    @Test
+    void should_notRegisterSingleton_whenClassRequiresComponentToBeMissing() {
+        waveContext.context(() -> {
+            singleton(DuplicateCalculatorServiceImpl.class);
+            singleton(TestClass.class, Options.builder()
+                    .conditionalOnMissing(DuplicateCalculatorServiceImpl.class)
+                    .build());
+        });
+
+        final DuplicateCalculatorServiceImpl dCalcInstance = waveContext.instanceOrNull(DuplicateCalculatorServiceImpl.class);
+        final TestClass testInstance = waveContext.instanceOrNull(TestClass.class);
+        assertNotNull(dCalcInstance);
+        assertNull(testInstance);
     }
 }

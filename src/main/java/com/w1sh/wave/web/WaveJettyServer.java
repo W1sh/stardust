@@ -1,6 +1,7 @@
 package com.w1sh.wave.web;
 
 import com.w1sh.wave.core.builder.ContextGroup;
+import com.w1sh.wave.web.handler.Handlers;
 import com.w1sh.wave.web.routing.Route;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -38,7 +39,13 @@ public class WaveJettyServer {
     public void context(ContextGroup contextGroup) {
         RouteBuilder.setStaticContext(this);
         contextGroup.apply();
+        registerDefaultHandlers();
         RouteBuilder.clearStaticContext();
+    }
+
+    private void registerDefaultHandlers() {
+        registerRoute(new Route(HttpMethod.GET, "/wave/health", Handlers.health()));
+        registerRoute(new Route(HttpMethod.GET, "/wave/shutdown", Handlers.shutdown()));
     }
 
     public void registerRoute(Route route) {

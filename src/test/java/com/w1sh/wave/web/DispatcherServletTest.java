@@ -29,7 +29,7 @@ class DispatcherServletTest {
     }
 
     @Test
-    void should_throwNoMatchingPathFoundException_whenRouteWithProvidedMethodAndPathIsNotRegistered() throws NoMatchingPathFound {
+    void should_throwNoMatchingPathFoundException_whenRouteWithProvidedMethodAndPathIsNotRegistered() {
         Route route = new Route(HttpMethod.GET, "/hello", (request, response) -> "Hello World!");
 
         dispatcherServlet.addRoute(route);

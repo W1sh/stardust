@@ -30,4 +30,11 @@ class WaveJettyServerTest {
 
         Mockito.verify(dispatcherServlet, Mockito.times(5)).addRoute(any());
     }
+
+    @Test
+    void should_registerDefaultHandlers_whenContextIsInitialized() {
+        waveJettyServer.context(() -> {});
+
+        Mockito.verify(dispatcherServlet, Mockito.times(2)).addRoute(any());
+    }
 }

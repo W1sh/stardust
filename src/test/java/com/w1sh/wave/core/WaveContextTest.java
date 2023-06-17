@@ -14,7 +14,6 @@ import java.util.Set;
 
 import static com.w1sh.wave.core.builder.ContextBuilder.provider;
 import static com.w1sh.wave.core.builder.ContextBuilder.singleton;
-import static com.w1sh.wave.web.RouteBuilder.get;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WaveContextTest {

@@ -1,6 +1,6 @@
 package com.w1sh.wave.web;
 
-import com.w1sh.wave.web.exception.NoMatchingPathFound;
+import com.w1sh.wave.web.exception.NoMatchingPathFoundException;
 import com.w1sh.wave.web.routing.Route;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -38,11 +38,11 @@ public class DispatcherServlet extends HttpServlet {
         super.service(req, resp);
     }
 
-    protected Route findMatchingRoute(String method, String path) throws NoMatchingPathFound {
+    protected Route findMatchingRoute(String method, String path) throws NoMatchingPathFoundException {
         HttpMethod httpMethod = HttpMethod.fromString(method);
         return routes.get(httpMethod).stream()
                 .filter(route -> path.equalsIgnoreCase(route.path()))
                 .findFirst()
-                .orElseThrow(() -> new NoMatchingPathFound(String.format("No matching path found for method %s and path %s", method, path)));
+                .orElseThrow(() -> new NoMatchingPathFoundException(String.format("No matching path found for method %s and path %s", method, path)));
     }
 }

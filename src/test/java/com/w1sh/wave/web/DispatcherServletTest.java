@@ -1,6 +1,6 @@
 package com.w1sh.wave.web;
 
-import com.w1sh.wave.web.exception.NoMatchingPathFound;
+import com.w1sh.wave.web.exception.NoMatchingPathFoundException;
 import com.w1sh.wave.web.routing.Route;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ class DispatcherServletTest {
     }
 
     @Test
-    void should_findMatchingRoute_whenRouteWithProvidedMethodAndPathIsRegistered() throws NoMatchingPathFound {
+    void should_findMatchingRoute_whenRouteWithProvidedMethodAndPathIsRegistered() throws NoMatchingPathFoundException {
         Route route = new Route(HttpMethod.GET, "/hello", (request, response) -> "Hello World!");
 
         dispatcherServlet.addRoute(route);
@@ -33,6 +33,6 @@ class DispatcherServletTest {
         Route route = new Route(HttpMethod.GET, "/hello", (request, response) -> "Hello World!");
 
         dispatcherServlet.addRoute(route);
-        assertThrows(NoMatchingPathFound.class, () -> dispatcherServlet.findMatchingRoute("get", "/byebye"));
+        assertThrows(NoMatchingPathFoundException.class, () -> dispatcherServlet.findMatchingRoute("get", "/byebye"));
     }
 }

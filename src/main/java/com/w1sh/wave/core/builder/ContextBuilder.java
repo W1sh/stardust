@@ -15,7 +15,7 @@ public class ContextBuilder {
     public static WaveContext staticInstance() {
         WaveContext context = staticContext.get();
         if (context == null) {
-            throw new IllegalStateException("The static API can only be used within a singletons() call.");
+            throw new IllegalStateException("The context static API can only be used within a WaveContext.context() call.");
         }
         return context;
     }

@@ -330,11 +330,7 @@ public class WaveContext {
 
     private void handleDelayedRegistrationsAndClassInitializations() {
         delayedRegistrations.forEach((key, value) -> {
-            boolean hasRequiredClasses = Arrays.stream(value.requiredClasses())
-                    .allMatch(providers::containsKey);
-            boolean hasRequiredMissingClasses = Arrays.stream(value.requiredMissingClasses())
-                    .noneMatch(providers::containsKey);
-            if (hasRequiredClasses && hasRequiredMissingClasses) {
+            if (areConditionsMetForRegistration(value)) {
                 registerSingleton(key, value);
             } else {
                 logger.debug("Failed to register instance of class {} as the conditions required were not met",
@@ -343,17 +339,21 @@ public class WaveContext {
         });
 
         delayedClassInitializations.forEach((key, value) -> {
-            boolean hasRequiredClasses = Arrays.stream(value.requiredClasses())
-                    .allMatch(providers::containsKey);
-            boolean hasRequiredMissingClasses = Arrays.stream(value.requiredMissingClasses())
-                    .noneMatch(providers::containsKey);
-            if (hasRequiredClasses && hasRequiredMissingClasses) {
+            if (areConditionsMetForRegistration(value)) {
                 registerSingleton(key, value);
             } else {
                 logger.debug("Failed to register class {} for initialization as the conditions required were not met",
                         key.getSimpleName());
             }
         });
+    }
+
+    private boolean areConditionsMetForRegistration(Options value) {
+        boolean hasRequiredClasses = Arrays.stream(value.requiredClasses())
+                .allMatch(providers::containsKey);
+        boolean hasRequiredMissingClasses = Arrays.stream(value.requiredMissingClasses())
+                .noneMatch(providers::containsKey);
+        return hasRequiredClasses && hasRequiredMissingClasses;
     }
 
     public NamingStrategy getNamingStrategy() {

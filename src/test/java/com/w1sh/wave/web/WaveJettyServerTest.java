@@ -1,5 +1,6 @@
 package com.w1sh.wave.web;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -13,9 +14,15 @@ class WaveJettyServerTest {
     private DispatcherServlet dispatcherServlet;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         dispatcherServlet = Mockito.spy(new DispatcherServlet());
         waveJettyServer = new WaveJettyServer(dispatcherServlet);
+        waveJettyServer.start();
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        waveJettyServer.stop();
     }
 
     @Test
@@ -28,12 +35,13 @@ class WaveJettyServerTest {
             delete("/hello", (request, response) -> "Hello World!");
         });
 
-        Mockito.verify(dispatcherServlet, Mockito.times(5)).addRoute(any());
+        // 5 user-defined + 2 default handlers
+        Mockito.verify(dispatcherServlet, Mockito.times(7)).addRoute(any());
     }
 
     @Test
     void should_registerDefaultHandlers_whenContextIsInitialized() {
-        waveJettyServer.context(() -> {});
+        waveJettyServer.context(null);
 
         Mockito.verify(dispatcherServlet, Mockito.times(2)).addRoute(any());
     }

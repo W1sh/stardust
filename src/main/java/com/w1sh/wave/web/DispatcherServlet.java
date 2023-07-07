@@ -32,7 +32,10 @@ public class DispatcherServlet extends HttpServlet {
         if (req.getHeader(SEC_WEBSOCKET_KEY) == null) {
             Route matchingRoute = findMatchingRoute(req.getMethod(), req.getRequestURI());
             logger.debug("Found matching route for method {} and path {}", req.getMethod(), req.getRequestURI());
-            matchingRoute.handler().handle(req, resp);
+            Object element = matchingRoute.handler().handle(req, resp);
+            resp.getWriter().write(element.toString());
+            resp.getWriter().flush();
+            return;
         }
         log("Websocket requested are currently unsupported");
         super.service(req, resp);

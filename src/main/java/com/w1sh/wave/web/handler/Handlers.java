@@ -12,7 +12,7 @@ public class Handlers {
     public static Handler shutdown() {
         return (req, resp) -> {
             System.exit(0);
-            return null;
+            return "Started shutdown";
         };
     }
 }

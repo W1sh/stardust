@@ -14,7 +14,7 @@ public class WaveJettyServer {
 
     private static final Logger logger = LoggerFactory.getLogger(WaveJettyServer.class);
     private static final int DEFAULT_PORT = 8080;
-    private static final int DEFAULT_IDLE_TIMEOUT = 8080;
+    private static final int DEFAULT_IDLE_TIMEOUT = 30000;
 
     private final Server server;
     private final DispatcherServlet dispatcher;
@@ -24,7 +24,7 @@ public class WaveJettyServer {
         this.dispatcher = dispatcher;
     }
 
-    public void start() {
+    public void start() throws Exception {
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(DEFAULT_PORT);
         connector.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
@@ -32,18 +32,24 @@ public class WaveJettyServer {
 
         ServletContextHandler contextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         contextHandler.setContextPath("/");
-        server.setHandler(contextHandler);
         contextHandler.addServlet(new ServletHolder(dispatcher), "/");
+        server.setHandler(contextHandler);
+        server.start();
+    }
+
+    public void stop() throws Exception {
+        server.stop();
     }
 
     public void context(ContextGroup contextGroup) {
         RouteBuilder.setStaticContext(this);
-        contextGroup.apply();
+        if (contextGroup != null) contextGroup.apply();
         registerDefaultHandlers();
         RouteBuilder.clearStaticContext();
     }
 
     private void registerDefaultHandlers() {
+        logger.info("Registering default handlers");
         registerRoute(new Route(HttpMethod.GET, "/wave/health", Handlers.health()));
         registerRoute(new Route(HttpMethod.GET, "/wave/shutdown", Handlers.shutdown()));
     }

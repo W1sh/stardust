@@ -47,7 +47,7 @@ public class WaveContext {
 
     public void context(ContextGroup contextGroup) {
         ContextBuilder.setStaticContext(this);
-        contextGroup.apply();
+        if (contextGroup != null) contextGroup.apply();
         handleDelayedRegistrationsAndClassInitializations();
         ContextBuilder.clearStaticContext();
     }

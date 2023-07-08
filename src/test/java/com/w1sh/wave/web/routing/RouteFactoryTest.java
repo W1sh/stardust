@@ -5,9 +5,6 @@ import com.w1sh.wave.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.wave.example.controller.impl.EmptyCalculatorControllerImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.Set;
 
 import static com.w1sh.wave.core.builder.ContextBuilder.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,7 +26,7 @@ class RouteFactoryTest {
 
     @Test
     void should_returnEmptySetOfRoutes_whenNoEndpointsAreDefinedInTheClass() {
-        Set<Route> routes = routeFactory.fromResource(EmptyCalculatorControllerImpl.class);
+        final var routes = routeFactory.fromResource(EmptyCalculatorControllerImpl.class);
 
         assertNotNull(routes);
         assertEquals(0, routes.size());
@@ -37,7 +34,7 @@ class RouteFactoryTest {
 
     @Test
     void should_returnSetOfRoutes_whenEndpointsAreDefinedInTheClass() {
-        Set<Route> routes = routeFactory.fromResource(CalculatorControllerImpl.class);
+        final var routes = routeFactory.fromResource(CalculatorControllerImpl.class);
 
         assertNotNull(routes);
         assertEquals(1, routes.size());

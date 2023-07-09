@@ -1,5 +1,6 @@
 package com.w1sh.wave.web;
 
+import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.core.builder.ContextGroup;
 import com.w1sh.wave.web.endpoint.core.HealthEndpoint;
 import com.w1sh.wave.web.endpoint.core.ShutdownEndpoint;
@@ -21,6 +22,7 @@ public class WaveJettyServer {
     private final Server server;
     private final DispatcherServlet dispatcher;
 
+    @Inject
     public WaveJettyServer(DispatcherServlet dispatcher) {
         this.server = new Server();
         this.dispatcher = dispatcher;

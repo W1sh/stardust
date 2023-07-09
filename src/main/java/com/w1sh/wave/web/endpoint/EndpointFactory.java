@@ -1,6 +1,7 @@
 package com.w1sh.wave.web.endpoint;
 
 import com.w1sh.wave.core.WaveContext;
+import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.web.http.Handler;
 import com.w1sh.wave.web.http.MethodArgumentTypeResolver;
 import com.w1sh.wave.web.http.QueryParameterMethodArgumentResolver;
@@ -16,6 +17,7 @@ public class EndpointFactory {
     private final QueryParameterMethodArgumentResolver argumentResolver;
     private final MethodArgumentTypeResolver typeResolver;
 
+    @Inject
     public EndpointFactory(WaveContext waveContext) {
         this.waveContext = waveContext;
         this.argumentResolver = waveContext.instance(QueryParameterMethodArgumentResolver.class);

@@ -1,5 +1,6 @@
 package com.w1sh.wave.web.routing;
 
+import com.w1sh.wave.core.annotation.Inject;
 import com.w1sh.wave.web.endpoint.EndpointFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ public class RouteFactory {
 
     private final EndpointFactory endpointFactory;
 
+    @Inject
     public RouteFactory(EndpointFactory endpointFactory) {
         this.endpointFactory = endpointFactory;
     }

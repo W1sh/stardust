@@ -1,4 +1,4 @@
-package com.w1sh.wave.web.handler;
+package com.w1sh.wave.web.endpoint;
 
 import com.w1sh.wave.web.DispatcherServlet;
 import com.w1sh.wave.web.WaveJettyServer;
@@ -36,7 +36,7 @@ class HandlersTest {
     @Test
     void should_respondToGetHealthRequest_whenHealthEndpointIsCalledAndHealthHandlerIsRegistered() throws Exception {
         final var client = HttpClient.newBuilder().build();
-        final var request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/wave/health")).build();
+        final var request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/wave/health?api=1")).build();
         waveJettyServer.context(null);
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

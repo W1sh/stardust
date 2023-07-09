@@ -1,8 +1,10 @@
 package com.w1sh.wave.web;
 
 import com.w1sh.wave.core.builder.ContextGroup;
-import com.w1sh.wave.web.handler.Handlers;
+import com.w1sh.wave.web.endpoint.core.HealthEndpoint;
+import com.w1sh.wave.web.endpoint.core.ShutdownEndpoint;
 import com.w1sh.wave.web.routing.Route;
+import com.w1sh.wave.web.routing.RouteBuilder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -50,8 +52,8 @@ public class WaveJettyServer {
 
     private void registerDefaultHandlers() {
         logger.info("Registering default handlers");
-        registerRoute(new Route(HttpMethod.GET, "/wave/health", Handlers.health()));
-        registerRoute(new Route(HttpMethod.GET, "/wave/shutdown", Handlers.shutdown()));
+        registerRoute(new Route(HttpMethod.GET, "/wave/health", new HealthEndpoint()));
+        registerRoute(new Route(HttpMethod.GET, "/wave/shutdown", new ShutdownEndpoint()));
     }
 
     public void registerRoute(Route route) {

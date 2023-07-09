@@ -1,6 +1,6 @@
 package com.w1sh.wave.web;
 
-import com.w1sh.wave.web.exception.NoMatchingPathFoundException;
+import com.w1sh.wave.web.exception.RouteMatchingException;
 import com.w1sh.wave.web.routing.Route;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -32,7 +32,7 @@ public class DispatcherServlet extends HttpServlet {
         if (req.getHeader(SEC_WEBSOCKET_KEY) == null) {
             Route matchingRoute = findMatchingRoute(req.getMethod(), req.getRequestURI());
             logger.debug("Found matching route for method {} and path {}", req.getMethod(), req.getRequestURI());
-            Object element = matchingRoute.handler().handle(req, resp);
+            Object element = matchingRoute.endpoint().handle(req, resp);
             resp.getWriter().write(element.toString());
             resp.getWriter().flush();
             return;
@@ -41,11 +41,11 @@ public class DispatcherServlet extends HttpServlet {
         super.service(req, resp);
     }
 
-    protected Route findMatchingRoute(String method, String path) throws NoMatchingPathFoundException {
+    protected Route findMatchingRoute(String method, String path) throws RouteMatchingException {
         HttpMethod httpMethod = HttpMethod.fromString(method);
         return routes.get(httpMethod).stream()
                 .filter(route -> path.equalsIgnoreCase(route.path()))
                 .findFirst()
-                .orElseThrow(() -> new NoMatchingPathFoundException(String.format("No matching path found for method %s and path %s", method, path)));
+                .orElseThrow(() -> new RouteMatchingException(String.format("No matching path found for method %s and path %s", method, path)));
     }
 }

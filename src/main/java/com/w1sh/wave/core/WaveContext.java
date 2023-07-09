@@ -301,7 +301,7 @@ public class WaveContext {
         if (type.getRawType().equals(Provider.class)) {
             return new ProviderBinding<>(provider);
         }
-        throw new ComponentCreationException(String.format("Unknown binding type %s", type.getRawType()));
+        throw new ComponentCreationException(String.format("Unknown binding expectedType %s", type.getRawType()));
     }
 
     private String createCircularDependencyChain(Set<Class<?>> chain, Class<?> clazz) {

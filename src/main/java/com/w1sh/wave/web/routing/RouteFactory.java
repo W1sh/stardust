@@ -1,14 +1,11 @@
 package com.w1sh.wave.web.routing;
 
-import com.w1sh.wave.core.WaveContext;
-import com.w1sh.wave.web.exception.EndpointMethodInvocationException;
-import com.w1sh.wave.web.handler.Handler;
+import com.w1sh.wave.web.endpoint.EndpointFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,10 +18,10 @@ public class RouteFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(RouteFactory.class);
 
-    private final WaveContext waveContext;
+    private final EndpointFactory endpointFactory;
 
-    public RouteFactory(WaveContext waveContext) {
-        this.waveContext = waveContext;
+    public RouteFactory(EndpointFactory endpointFactory) {
+        this.endpointFactory = endpointFactory;
     }
 
     public Set<Route> fromResource(Class<?> clazz) {
@@ -46,21 +43,9 @@ public class RouteFactory {
                     .findFirst()
                     .orElse(UNSUPPORTED);
             if (!UNSUPPORTED.equals(method)) {
-                routes.add(new Route(method, path, createEndpointHandler(declaredMethod, clazz)));
+                routes.add(new Route(method, path, endpointFactory.fromMethod(declaredMethod, clazz)));
             }
         }
         return routes;
-    }
-
-    private Handler createEndpointHandler(Method method, Class<?> clazz) {
-        final var classInstance = waveContext.instance(clazz);
-        return (req, resp) -> {
-            try {
-                return method.invoke(classInstance, req, resp);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                logger.error("Failed to invoke endpoint method");
-                throw new EndpointMethodInvocationException(e);
-            }
-        };
     }
 }

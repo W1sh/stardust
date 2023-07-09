@@ -1,7 +1,9 @@
-package com.w1sh.wave.web;
+package com.w1sh.wave.web.routing;
 
-import com.w1sh.wave.web.handler.Handler;
-import com.w1sh.wave.web.routing.Route;
+import com.w1sh.wave.web.HttpMethod;
+import com.w1sh.wave.web.WaveJettyServer;
+import com.w1sh.wave.web.endpoint.EndpointFactory;
+import com.w1sh.wave.web.http.Handler;
 
 public class RouteBuilder {
 
@@ -27,22 +29,22 @@ public class RouteBuilder {
     }
 
     public static void get(String path, Handler handler) {
-        staticInstance().registerRoute(new Route(HttpMethod.GET, path, handler));
+        staticInstance().registerRoute(new Route(HttpMethod.GET, path, EndpointFactory.fromHandler(handler)));
     }
 
     public static void put(String path, Handler handler) {
-        staticInstance().registerRoute(new Route(HttpMethod.PUT, path, handler));
+        staticInstance().registerRoute(new Route(HttpMethod.PUT, path, EndpointFactory.fromHandler(handler)));
     }
 
     public static void patch(String path, Handler handler) {
-        staticInstance().registerRoute(new Route(HttpMethod.PATCH, path, handler));
+        staticInstance().registerRoute(new Route(HttpMethod.PATCH, path, EndpointFactory.fromHandler(handler)));
     }
 
     public static void post(String path, Handler handler) {
-        staticInstance().registerRoute(new Route(HttpMethod.POST, path, handler));
+        staticInstance().registerRoute(new Route(HttpMethod.POST, path, EndpointFactory.fromHandler(handler)));
     }
 
     public static void delete(String path, Handler handler) {
-        staticInstance().registerRoute(new Route(HttpMethod.DELETE, path, handler));
+        staticInstance().registerRoute(new Route(HttpMethod.DELETE, path, EndpointFactory.fromHandler(handler)));
     }
 }

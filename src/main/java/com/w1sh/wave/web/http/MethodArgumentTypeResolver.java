@@ -1,5 +1,6 @@
 package com.w1sh.wave.web.http;
 
+import com.w1sh.wave.web.annotation.QueryParam;
 import com.w1sh.wave.web.exception.TypeMatchingException;
 import com.w1sh.wave.web.http.mapper.ValueMapper;
 
@@ -31,10 +32,19 @@ public class MethodArgumentTypeResolver {
                 if (argument.value().length > 1) {
                     throw new TypeMatchingException("Expected single value but received multiple");
                 } else {
-                    return ValueMapper.fromString(argument.value()[0], argument.expectedType());
+                    return resolveOrDefault(argument);
                 }
             }
         }
         return null;
+    }
+
+    private Object resolveOrDefault(MethodArgument argument) {
+        QueryParam annotation = argument.method().getParameters()[argument.index()].getAnnotation(QueryParam.class);
+        if (argument.value()[0].isBlank() && annotation != null && !annotation.defaultValue().isBlank()) {
+            return ValueMapper.fromString(annotation.defaultValue(), argument.expectedType());
+        } else {
+            return ValueMapper.fromString(argument.value()[0], argument.expectedType());
+        }
     }
 }

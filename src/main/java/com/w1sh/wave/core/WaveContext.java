@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -47,6 +48,11 @@ public class WaveContext {
 
     public void context(ContextGroup contextGroup) {
         ContextBuilder.setStaticContext(this);
+
+        final ObjectProvider<?> objectProvider = new DefinedObjectProvider<>(this);
+        providers.put(this.getClass(), objectProvider);
+        named.put("waveContext", objectProvider);
+
         if (contextGroup != null) contextGroup.apply();
         handleDelayedRegistrationsAndClassInitializations();
         ContextBuilder.clearStaticContext();
@@ -103,6 +109,12 @@ public class WaveContext {
         final String singletonName = isNameDefined(options) ? options.name() : namingStrategy.generate(instance.getClass());
         providers.put(clazz, objectProvider);
         named.put(singletonName, objectProvider);
+    }
+
+    public List<Class<?>> findRegisteredClassesAnnotatedWith(Class<? extends Annotation> annotationType) {
+        return providers.keySet().stream()
+                .filter(clazz -> clazz.isAnnotationPresent(annotationType))
+                .toList();
     }
 
     @SuppressWarnings("unchecked")
@@ -245,7 +257,7 @@ public class WaveContext {
             return newInstance(constructor, new Object[]{});
         }
 
-        if (chain.contains(clazz)) {
+        if (containsCircularDependency(constructor, chain)) {
             throw new CircularDependencyException(String.format("Can't create instance of class %s. Circular dependency: %s",
                     clazz.getName(), createCircularDependencyChain(chain, clazz)));
         }
@@ -273,6 +285,11 @@ public class WaveContext {
             }
         }
         return newInstance(constructor, params);
+    }
+
+    private <T> boolean containsCircularDependency(Constructor<T> constructor, Set<Class<?>> chain) {
+        return Arrays.stream(constructor.getParameterTypes())
+                .anyMatch(chain::contains);
     }
 
     private Class<?> getActualParameterType(Type paramType) {

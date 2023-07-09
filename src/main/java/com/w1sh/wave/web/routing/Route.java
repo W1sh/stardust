@@ -1,7 +1,7 @@
 package com.w1sh.wave.web.routing;
 
 import com.w1sh.wave.web.HttpMethod;
-import com.w1sh.wave.web.handler.Handler;
+import com.w1sh.wave.web.endpoint.Endpoint;
 
-public record Route(HttpMethod method, String path, Handler handler) {
+public record Route(HttpMethod method, String path, Endpoint endpoint) {
 }

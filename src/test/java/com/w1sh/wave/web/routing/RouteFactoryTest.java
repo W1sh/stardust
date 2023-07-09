@@ -3,6 +3,9 @@ package com.w1sh.wave.web.routing;
 import com.w1sh.wave.core.WaveContext;
 import com.w1sh.wave.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.wave.example.controller.impl.EmptyCalculatorControllerImpl;
+import com.w1sh.wave.web.endpoint.EndpointFactory;
+import com.w1sh.wave.web.http.MethodArgumentTypeResolver;
+import com.w1sh.wave.web.http.QueryParameterMethodArgumentResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,15 +16,20 @@ import static org.mockito.Mockito.*;
 
 class RouteFactoryTest {
 
-    private WaveContext waveContext;
     private RouteFactory routeFactory;
+    private EndpointFactory endpointFactory;
 
     @BeforeEach
     void setUp() {
-        waveContext = spy(new WaveContext());
-        waveContext.context(() -> singleton(CalculatorControllerImpl.class));
+        WaveContext waveContext = spy(new WaveContext());
+        waveContext.context(() -> {
+            singleton(CalculatorControllerImpl.class);
+            singleton(QueryParameterMethodArgumentResolver.class);
+            singleton(MethodArgumentTypeResolver.class);
+        });
+        endpointFactory = spy(new EndpointFactory(waveContext));
 
-        routeFactory = new RouteFactory(waveContext);
+        routeFactory = new RouteFactory(endpointFactory);
     }
 
     @Test
@@ -38,6 +46,6 @@ class RouteFactoryTest {
 
         assertNotNull(routes);
         assertEquals(1, routes.size());
-        verify(waveContext, times(1)).instance(CalculatorControllerImpl.class);
+        verify(endpointFactory, times(1)).fromMethod(any(), any());
     }
 }

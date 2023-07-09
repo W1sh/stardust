@@ -1,4 +1,4 @@
-package com.w1sh.wave.web.handler;
+package com.w1sh.wave.web.http;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

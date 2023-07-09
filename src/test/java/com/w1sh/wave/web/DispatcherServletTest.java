@@ -1,7 +1,10 @@
 package com.w1sh.wave.web;
 
-import com.w1sh.wave.web.exception.NoMatchingPathFoundException;
+import com.w1sh.wave.web.endpoint.Endpoint;
+import com.w1sh.wave.web.exception.RouteMatchingException;
 import com.w1sh.wave.web.routing.Route;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +20,8 @@ class DispatcherServletTest {
     }
 
     @Test
-    void should_findMatchingRoute_whenRouteWithProvidedMethodAndPathIsRegistered() throws NoMatchingPathFoundException {
-        Route route = new Route(HttpMethod.GET, "/hello", (request, response) -> "Hello World!");
+    void should_findMatchingRoute_whenRouteWithProvidedMethodAndPathIsRegistered() throws RouteMatchingException {
+        Route route = new Route(HttpMethod.GET, "/hello", simpleEndpoint());
 
         dispatcherServlet.addRoute(route);
         Route matchingRoute = dispatcherServlet.findMatchingRoute("get", "/hello");
@@ -30,9 +33,18 @@ class DispatcherServletTest {
 
     @Test
     void should_throwNoMatchingPathFoundException_whenRouteWithProvidedMethodAndPathIsNotRegistered() {
-        Route route = new Route(HttpMethod.GET, "/hello", (request, response) -> "Hello World!");
+        Route route = new Route(HttpMethod.GET, "/hello", simpleEndpoint());
 
         dispatcherServlet.addRoute(route);
-        assertThrows(NoMatchingPathFoundException.class, () -> dispatcherServlet.findMatchingRoute("get", "/byebye"));
+        assertThrows(RouteMatchingException.class, () -> dispatcherServlet.findMatchingRoute("get", "/byebye"));
+    }
+
+    private Endpoint simpleEndpoint() {
+        return new Endpoint() {
+            @Override
+            public Object handle(HttpServletRequest request, HttpServletResponse response) {
+                return  "Hello World!";
+            }
+        };
     }
 }

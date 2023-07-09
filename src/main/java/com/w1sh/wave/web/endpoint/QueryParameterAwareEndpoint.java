@@ -1,6 +1,7 @@
 package com.w1sh.wave.web.endpoint;
 
 import com.w1sh.wave.web.exception.EndpointMethodInvocationException;
+import com.w1sh.wave.web.exception.RequiredArgumentException;
 import com.w1sh.wave.web.exception.TypeMatchingException;
 import com.w1sh.wave.web.http.MethodArgument;
 import com.w1sh.wave.web.http.MethodArgumentTypeResolver;
@@ -35,7 +36,7 @@ public class QueryParameterAwareEndpoint extends Endpoint {
             List<MethodArgument> methodArguments = argumentResolver.resolveQueryParameters(req, method);
             Object[] objects = typeResolver.resolveMethodArguments(methodArguments);
             return method.invoke(instance, objects);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | RequiredArgumentException e) {
             logger.error("Failed to invoke endpoint method");
             throw new EndpointMethodInvocationException(e);
         }

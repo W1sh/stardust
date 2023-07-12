@@ -7,7 +7,7 @@ public interface Condition {
     /**
      * Return the {@link EvaluationPhase} in which the condition should be evaluated.
      */
-    EvaluationPhase getConfigurationPhase();
+    EvaluationPhase getEvaluationPhase();
 
     /**
      * The various phases where the condition could be evaluated.

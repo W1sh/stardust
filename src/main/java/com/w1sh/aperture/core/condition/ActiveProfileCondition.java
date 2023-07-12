@@ -16,7 +16,7 @@ public class ActiveProfileCondition implements Condition {
     }
 
     @Override
-    public EvaluationPhase getConfigurationPhase() {
+    public EvaluationPhase getEvaluationPhase() {
         return EvaluationPhase.CONFIGURATION;
     }
 }

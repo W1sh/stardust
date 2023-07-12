@@ -24,6 +24,6 @@ public class ProviderConditionEvaluator {
 
     public boolean canEvaluateEarly(List<Condition> conditions) {
         return conditions != null && conditions.stream()
-                .anyMatch(condition -> Condition.EvaluationPhase.REGISTRATION.equals(condition.getConfigurationPhase()));
+                .anyMatch(condition -> Condition.EvaluationPhase.REGISTRATION.equals(condition.getEvaluationPhase()));
     }
 }

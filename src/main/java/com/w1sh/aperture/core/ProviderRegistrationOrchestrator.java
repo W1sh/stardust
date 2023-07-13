@@ -99,7 +99,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
         List<Class<?>> conditionFactories = ModuleInspector.findAllInternalSubclassesOf(MetadataConditionFactory.class);
         logger.debug("Found {} internal condition factories to be register", conditionFactories.size());
         conditionFactories.forEach(cf -> {
-            InitializationContext<?> context = new ConstructorInitializationContext<>(cf, Options.builder().build());
+            InitializationContext<?> context = new ConstructorInitializationContext<>(cf, Options.empty());
             ObjectProvider<?> provider = factory.create(context);
             registry.register(provider, cf, context.getName());
         });

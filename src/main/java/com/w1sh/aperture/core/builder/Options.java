@@ -12,10 +12,12 @@ public record Options(String name, Class<?>[] requiredClasses, Class<?>[] requir
         return new Builder();
     }
 
+    public static Options empty() { return Options.builder().build(); }
+
     public static final class Builder {
 
         private String name;
-        private Map<String, String> requiredSystemProperties = new HashMap<>(8);
+        private Map<String, String> requiredSystemProperties = HashMap.newHashMap(8);
         private Class<?>[] requiredClasses;
         private Class<?>[] requiredMissingClasses;
         private String[] profiles;

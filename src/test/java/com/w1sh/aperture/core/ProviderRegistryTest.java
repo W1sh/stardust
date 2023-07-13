@@ -1,7 +1,5 @@
 package com.w1sh.aperture.core;
 
-import com.w1sh.aperture.core.condition.Condition;
-import com.w1sh.aperture.core.condition.MetadataConditionFactory;
 import com.w1sh.aperture.example.controller.CalculatorController;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;

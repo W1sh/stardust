@@ -29,7 +29,7 @@ class ProviderRegistrationOrchestratorTest {
 
     @Test
     void should_orchestrateClassRegistration_whenGivenClassIsRegistered() {
-        orchestrator.register(DuplicateCalculatorServiceImpl.class, Options.builder().build());
+        orchestrator.register(DuplicateCalculatorServiceImpl.class, Options.empty());
 
         orchestrator.orchestrate();
 

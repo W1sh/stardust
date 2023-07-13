@@ -13,11 +13,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.w1sh.aperture.core.builder.ContextBuilder.singleton;
 import static com.w1sh.aperture.util.Tests.register;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.spy;
 
 class EndpointDiscovererTest {
 

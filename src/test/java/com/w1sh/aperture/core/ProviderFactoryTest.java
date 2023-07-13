@@ -21,7 +21,7 @@ class ProviderFactoryTest {
 
     @Test
     void should_returnProvider_whenGivenValidConstructorInitializationContext() {
-        final var context = new ConstructorInitializationContext<>(DuplicateCalculatorServiceImpl.class, Options.builder().build());
+        final var context = new ConstructorInitializationContext<>(DuplicateCalculatorServiceImpl.class, Options.empty());
 
         ObjectProvider<?> provider = factory.create(context);
 
@@ -31,7 +31,7 @@ class ProviderFactoryTest {
 
     @Test
     void should_returnProvider_whenGivenValidInstanceInitializationContext() {
-        final var context = new InstanceInitializationContext<>(new DuplicateCalculatorServiceImpl(), Options.builder().build());
+        final var context = new InstanceInitializationContext<>(new DuplicateCalculatorServiceImpl(), Options.empty());
 
         ObjectProvider<?> provider = factory.create(context);
 
@@ -41,7 +41,7 @@ class ProviderFactoryTest {
 
     @Test
     void should_returnProvider_whenGivenValidSupplierInitializationContext() {
-        final var context = new SupplierInitializationContext<>(DuplicateCalculatorServiceImpl.class, Options.builder().build(),
+        final var context = new SupplierInitializationContext<>(DuplicateCalculatorServiceImpl.class, Options.empty(),
                 DuplicateCalculatorServiceImpl::new);
 
         ObjectProvider<?> provider = factory.create(context);

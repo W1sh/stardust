@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class PhaseEventListenerTest {

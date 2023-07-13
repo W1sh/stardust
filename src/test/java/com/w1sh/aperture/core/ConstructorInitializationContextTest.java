@@ -12,7 +12,7 @@ class ConstructorInitializationContextTest {
 
     @Test
     void should_returnNoArgConstructor_whenNoConstructorIsAvailable() {
-        final var context = new ConstructorInitializationContext<>(BetterCalculatorServiceImpl.class, Options.builder().build());
+        final var context = new ConstructorInitializationContext<>(BetterCalculatorServiceImpl.class, Options.empty());
 
         assertNotNull(context.getConstructor());
         assertEquals(0, context.getConstructor().getParameterCount());
@@ -20,7 +20,7 @@ class ConstructorInitializationContextTest {
 
     @Test
     void should_returnInjectedAnnotatedConstructor_whenOneIsPresent() {
-        final var context = new ConstructorInitializationContext<>(CalculatorServiceImpl.class, Options.builder().build());
+        final var context = new ConstructorInitializationContext<>(CalculatorServiceImpl.class, Options.empty());
 
         assertNotNull(context.getConstructor());
         assertTrue(context.getConstructor().isAnnotationPresent(Inject.class));

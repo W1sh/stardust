@@ -65,6 +65,6 @@ public class ContextBuilder {
     }
 
     private static Options optionsOrDefault(Options options) {
-        return options != null ? options : Options.builder().build();
+        return options != null ? options : Options.empty();
     }
 }

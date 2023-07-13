@@ -15,12 +15,11 @@ import static org.mockito.Mockito.spy;
 
 class ProviderConditionEvaluatorTest {
 
-    private ProviderRegistry registry;
     private ProviderConditionEvaluator evaluator;
 
     @BeforeEach
     void setUp() {
-        registry = spy(new ProviderRegistry());
+        ProviderRegistry registry = spy(new ProviderRegistry());
         Environment environment = new Environment(Set.of("test"));
         evaluator = new ProviderConditionEvaluator(registry, environment);
     }

@@ -30,7 +30,7 @@ class RequiredMissingClassConditionFactoryTest {
 
     @Test
     void should_returnNull_whenGivenOptionsWithNoActiveProfiles() {
-        final var options = Options.builder().build();
+        final var options = Options.empty();
 
         var condition = factory.create(options);
 

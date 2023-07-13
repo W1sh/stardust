@@ -9,7 +9,7 @@ public class Tests {
 
     public static void register(ProviderRegistry registry, Class<?> clazz) {
         var factory = new ProviderFactory(registry);
-        var provider = factory.create(new ConstructorInitializationContext<>(clazz, Options.builder().build()));
+        var provider = factory.create(new ConstructorInitializationContext<>(clazz, Options.empty()));
         registry.register(provider, clazz, clazz.getSimpleName());
     }
 }

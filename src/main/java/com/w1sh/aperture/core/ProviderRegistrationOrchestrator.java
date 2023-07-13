@@ -12,11 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ProviderRegistrationOrchestrator {
+public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderRegistrationOrchestrator.class);
 
     private final List<InitializationContext<?>> pendingRegistrations = new ArrayList<>(256);
+    private final List<PhaseEventListener> listeners = new ArrayList<>(64);
 
     private final ProviderFactory factory;
     private final ProviderRegistry registry;
@@ -103,5 +104,30 @@ public class ProviderRegistrationOrchestrator {
             registry.register(provider, cf, context.getName());
         });
         registry.instances(new TypeReference<MetadataConditionFactory<?>>() {}).forEach(conditionFactory::register);
+    }
+
+    @Override
+    public <T extends PhaseEvent> void addApplicationListener(PhaseEventListener<T> listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public <T extends PhaseEvent> void removeApplicationListener(PhaseEventListener<T> listener) {
+        listeners.remove(listener);
+    }
+
+    @Override
+    public void removeAllListeners() {
+        listeners.clear();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends PhaseEvent> void multicast(T event) {
+        listeners.forEach(listener -> {
+            if (listener.getEventType().isAssignableFrom(event.getClass())) {
+                listener.onEvent(event);
+            }
+        });
     }
 }

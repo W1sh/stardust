@@ -36,4 +36,5 @@ class ProviderRegistrationOrchestratorTest {
         verify(factory, times(1)).create(any());
         verify(registry, times(1)).register(any(), any(), any());
     }
+
 }

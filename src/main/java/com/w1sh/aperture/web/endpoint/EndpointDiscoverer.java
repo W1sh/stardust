@@ -7,7 +7,7 @@ import com.w1sh.aperture.web.routing.RouteFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Path;
+import jakarta.ws.rs.Path;
 import java.util.List;
 import java.util.Set;
 

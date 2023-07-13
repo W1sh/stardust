@@ -13,7 +13,7 @@ public class ProviderConditionEvaluator {
         this.context = new ConditionContext(registry, environment);
     }
 
-    public boolean shouldSkip(List<Condition> conditions) {
+    public boolean shouldSkip(List<? extends Condition> conditions) {
         for (Condition condition : conditions) {
             if (!condition.matches(context)) {
                 return true;
@@ -22,7 +22,7 @@ public class ProviderConditionEvaluator {
         return false;
     }
 
-    public boolean canEvaluateEarly(List<Condition> conditions) {
+    public boolean canEvaluateEarly(List<? extends Condition> conditions) {
         return conditions != null && conditions.stream()
                 .anyMatch(condition -> Condition.EvaluationPhase.REGISTRATION.equals(condition.getEvaluationPhase()));
     }

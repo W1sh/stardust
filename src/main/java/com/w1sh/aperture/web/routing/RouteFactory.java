@@ -2,11 +2,11 @@ package com.w1sh.aperture.web.routing;
 
 import com.w1sh.aperture.core.annotation.Inject;
 import com.w1sh.aperture.web.endpoint.EndpointFactory;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.Path;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;

@@ -48,6 +48,20 @@ public class ProviderRegistry {
         return provider != null ? (T) provider.singletonInstance() : null;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> List<T> instances(Class<T> clazz) {
+        return (List<T>) candidates(clazz).stream()
+                .map(ObjectProvider::singletonInstance)
+                .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> instances(TypeReference<T> typeReference) {
+        return (List<T>) candidates(typeReference.getType().getClass()).stream()
+                .map(ObjectProvider::singletonInstance)
+                .toList();
+    }
+
     public <T> ObjectProvider<T> provider(Class<T> clazz) {
         return get(clazz);
     }
@@ -55,6 +69,11 @@ public class ProviderRegistry {
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> provider(String name) {
         return (ObjectProvider<T>) named.get(name);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<ObjectProvider<T>> providers(Class<T> clazz) {
+        return (List<ObjectProvider<T>>) candidates(clazz);
     }
 
     public <T> boolean contains(Class<T> clazz) {
@@ -73,15 +92,19 @@ public class ProviderRegistry {
 
     @SuppressWarnings("unchecked")
     private <T> ObjectProvider<T> get(Class<T> clazz) {
-        final var candidates = providers.entrySet().stream()
-                .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .toList();
+        final var candidates = candidates(clazz);
 
         if (candidates.size() > 1) {
             logger.error("Expected 1 candidate but found {} for class {}", candidates.size(), clazz);
             throw new MultipleProviderCandidatesException(candidates.size(), clazz);
         }
         return candidates.isEmpty() ? null : (ObjectProvider<T>) candidates.get(0);
+    }
+
+    private <T> List<? extends ObjectProvider<?>> candidates(Class<T> clazz) {
+        return providers.entrySet().stream()
+                .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .toList();
     }
 }

@@ -1,22 +1,27 @@
 package com.w1sh.aperture.core.condition;
 
 import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.core.util.Types;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class ProviderConditionFactory {
 
-    public List<Condition> create(Options options) {
-        final List<Condition> conditions = new ArrayList<>();
-        if (options.requiredClasses() != null && options.requiredClasses().length > 0) {
-            conditions.add(new RequiresClassCondition(List.of(options.requiredClasses())));
-        } else if (options.requiredMissingClasses() != null && options.requiredMissingClasses().length > 0) {
-            conditions.add(new RequiresMissingClassCondition(Arrays.asList(options.requiredMissingClasses())));
-        } else if (options.profiles() != null && options.profiles().length > 0) {
-            conditions.add(new ActiveProfileCondition(Arrays.asList(options.profiles())));
-        }
-        return conditions;
+    private static final Logger logger = LoggerFactory.getLogger(ProviderConditionFactory.class);
+
+    private final Set<MetadataConditionFactory<?>> metadataConditionFactories = HashSet.newHashSet(64);
+
+    public List<? extends Condition> create(Options options) {
+        return metadataConditionFactories.stream()
+                .map(factory -> factory.create(options))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    public void register(MetadataConditionFactory<?> factory) {
+        logger.debug("Registering factory for condition {}", Types.getActualTypeArgument(factory.getClass(), 0));
+        metadataConditionFactories.add(factory);
     }
 }

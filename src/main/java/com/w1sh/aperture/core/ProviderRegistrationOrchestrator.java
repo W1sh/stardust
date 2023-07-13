@@ -2,12 +2,12 @@ package com.w1sh.aperture.core;
 
 import com.w1sh.aperture.core.builder.Options;
 import com.w1sh.aperture.core.condition.Condition;
+import com.w1sh.aperture.core.condition.MetadataConditionFactory;
 import com.w1sh.aperture.core.condition.ProviderConditionEvaluator;
 import com.w1sh.aperture.core.condition.ProviderConditionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Priority;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -51,7 +51,9 @@ public class ProviderRegistrationOrchestrator {
     }
 
     public void prepare() {
-        // initialize listeners
+        logger.debug("Preparing context for registration");
+        logger.debug("Registering condition factories");
+        registerConditionFactories();
     }
 
     public void orchestrate() {
@@ -60,7 +62,7 @@ public class ProviderRegistrationOrchestrator {
 
         pendingRegistrations.forEach(context -> {
             logger.debug("Starting registration for class {}", context.getClazz());
-            List<Condition> conditions = conditionFactory.create(context.getOptions());
+            List<? extends Condition> conditions = conditionFactory.create(context.getOptions());
 
             if (conditionEvaluator.canEvaluateEarly(conditions)) {
                 boolean shouldSkip = conditionEvaluator.shouldSkip(conditions);
@@ -79,7 +81,7 @@ public class ProviderRegistrationOrchestrator {
 
         delayedRegistrations.forEach(context -> {
             logger.debug("Starting delayed registration for class {}", context.getClazz());
-            List<Condition> conditions = conditionFactory.create(context.getOptions());
+            List<? extends Condition> conditions = conditionFactory.create(context.getOptions());
             boolean shouldSkip = conditionEvaluator.shouldSkip(conditions);
             if (shouldSkip) {
                 logger.info("Skipping registration of class {} as the conditions are not met", context.getClazz().getSimpleName());
@@ -90,5 +92,16 @@ public class ProviderRegistrationOrchestrator {
         });
 
         pendingRegistrations.clear();
+    }
+
+    private void registerConditionFactories() {
+        List<Class<?>> conditionFactories = ModuleInspector.findAllInternalSubclassesOf(MetadataConditionFactory.class);
+        logger.debug("Found {} internal condition factories to be register", conditionFactories.size());
+        conditionFactories.forEach(cf -> {
+            InitializationContext<?> context = new ConstructorInitializationContext<>(cf, Options.builder().build());
+            ObjectProvider<?> provider = factory.create(context);
+            registry.register(provider, cf, context.getName());
+        });
+        registry.instances(new TypeReference<MetadataConditionFactory<?>>() {}).forEach(conditionFactory::register);
     }
 }

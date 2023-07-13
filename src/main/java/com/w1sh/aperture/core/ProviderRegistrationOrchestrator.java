@@ -61,6 +61,8 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
         logger.debug("Received {} classes/instances to be registered", pendingRegistrations.size());
         final var delayedRegistrations = new ArrayList<InitializationContext<?>>(256);
 
+        ProviderOrderComparator.sort(pendingRegistrations);
+
         pendingRegistrations.forEach(context -> {
             logger.debug("Starting registration for class {}", context.getClazz());
             List<? extends Condition> conditions = conditionFactory.create(context.getOptions());

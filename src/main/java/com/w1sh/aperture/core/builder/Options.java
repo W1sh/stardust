@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public record Options(String name, Class<?>[] requiredClasses, Class<?>[] requiredMissingClasses, String[] profiles,
+public record Options(String name, Integer order, Class<?>[] requiredClasses, Class<?>[] requiredMissingClasses, String[] profiles,
                       Map<String, String> requiredSystemProperties, boolean timed) {
 
     public static Builder builder() {
@@ -17,14 +17,20 @@ public record Options(String name, Class<?>[] requiredClasses, Class<?>[] requir
     public static final class Builder {
 
         private String name;
+        private Integer order;
         private Map<String, String> requiredSystemProperties = HashMap.newHashMap(8);
         private Class<?>[] requiredClasses;
         private Class<?>[] requiredMissingClasses;
         private String[] profiles;
         private boolean timed;
 
-        public Builder withName(String name) {
+        public Builder name(String name) {
             this.name = name;
+            return this;
+        }
+
+        public Builder order(Integer order) {
+            this.order = order;
             return this;
         }
 
@@ -62,7 +68,7 @@ public record Options(String name, Class<?>[] requiredClasses, Class<?>[] requir
             if (requiredClasses == null) this.requiredClasses = new Class[0];
             if (requiredMissingClasses == null) this.requiredMissingClasses = new Class[0];
             if (profiles == null) this.profiles = new String[0];
-            return new Options(name, requiredClasses, requiredMissingClasses, profiles, requiredSystemProperties, timed);
+            return new Options(name, order, requiredClasses, requiredMissingClasses, profiles, requiredSystemProperties, timed);
         }
     }
 

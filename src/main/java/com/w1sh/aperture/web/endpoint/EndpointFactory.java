@@ -1,6 +1,6 @@
 package com.w1sh.aperture.web.endpoint;
 
-import com.w1sh.aperture.core.ProviderRegistry;
+import com.w1sh.aperture.core.DefaultProviderRegistry;
 import com.w1sh.aperture.core.annotation.Inject;
 import com.w1sh.aperture.web.http.Handler;
 import com.w1sh.aperture.web.http.MethodArgumentTypeResolver;
@@ -13,12 +13,12 @@ import java.util.Arrays;
 
 public class EndpointFactory {
 
-    private final ProviderRegistry registry;
+    private final DefaultProviderRegistry registry;
     private final QueryParameterMethodArgumentResolver argumentResolver;
     private final MethodArgumentTypeResolver typeResolver;
 
     @Inject
-    public EndpointFactory(ProviderRegistry registry, QueryParameterMethodArgumentResolver argumentResolver,
+    public EndpointFactory(DefaultProviderRegistry registry, QueryParameterMethodArgumentResolver argumentResolver,
                            MethodArgumentTypeResolver typeResolver) {
         this.registry = registry;
         this.argumentResolver = argumentResolver;

@@ -1,7 +1,7 @@
 package com.w1sh.aperture.core.condition;
 
 import com.w1sh.aperture.core.Environment;
-import com.w1sh.aperture.core.ProviderRegistry;
+import com.w1sh.aperture.core.DefaultProviderRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class ProviderConditionEvaluatorTest {
 
     @BeforeEach
     void setUp() {
-        ProviderRegistry registry = spy(new ProviderRegistry());
+        DefaultProviderRegistry registry = spy(new DefaultProviderRegistry());
         Environment environment = new Environment(Set.of("test"));
         evaluator = new ProviderConditionEvaluator(registry, environment);
     }

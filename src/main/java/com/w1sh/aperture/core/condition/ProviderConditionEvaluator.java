@@ -1,7 +1,7 @@
 package com.w1sh.aperture.core.condition;
 
 import com.w1sh.aperture.core.Environment;
-import com.w1sh.aperture.core.ProviderRegistry;
+import com.w1sh.aperture.core.DefaultProviderRegistry;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public class ProviderConditionEvaluator {
 
     private final ConditionContext context;
 
-    public ProviderConditionEvaluator(ProviderRegistry registry, Environment environment) {
+    public ProviderConditionEvaluator(DefaultProviderRegistry registry, Environment environment) {
         this.context = new ConditionContext(registry, environment);
     }
 

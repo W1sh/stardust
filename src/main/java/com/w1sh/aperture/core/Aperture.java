@@ -12,14 +12,14 @@ public class Aperture {
     private static final Logger logger = LoggerFactory.getLogger(Aperture.class);
 
     private ProviderRegistrationOrchestrator orchestrator;
-    private ProviderRegistry registry;
+    private DefaultProviderRegistry registry;
     private ProviderFactory factory;
     private Environment environment;
 
     private String[] profiles;
 
     public Aperture() {
-        this.registry = new ProviderRegistry();
+        this.registry = new DefaultProviderRegistry();
         this.factory = new ProviderFactory(registry);
     }
 

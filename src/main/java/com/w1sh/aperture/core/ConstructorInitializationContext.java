@@ -3,6 +3,7 @@ package com.w1sh.aperture.core;
 import com.w1sh.aperture.core.annotation.Inject;
 import com.w1sh.aperture.core.builder.Options;
 import com.w1sh.aperture.core.exception.ComponentCreationException;
+import com.w1sh.aperture.core.exception.ProviderRegistrationException;
 
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ public class ConstructorInitializationContext<T> extends InitializationContext<T
         for (Constructor<?> declaredConstructor : getClazz().getDeclaredConstructors()) {
             if (declaredConstructor.isAnnotationPresent(Inject.class)) {
                 if (injectConstructor != null) {
-                    throw new ComponentCreationException(String.format("%s has multiple constructors annotated with @Inject", getClazz().getName()));
+                    throw ProviderRegistrationException.multipleConstructors(getClazz());
                 }
                 injectConstructor = (Constructor<T>) declaredConstructor;
             }
@@ -48,7 +49,7 @@ public class ConstructorInitializationContext<T> extends InitializationContext<T
             try {
                 return getClazz().getConstructor();
             } catch (NoSuchMethodException e) {
-                throw new ComponentCreationException(String.format("%s doesn't have a constructor annotated with @Inject or a no-arg constructor", getClazz().getName()));
+                throw ProviderRegistrationException.noConstructor(getClazz());
             }
         }
         return injectConstructor;

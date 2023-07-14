@@ -1,6 +1,6 @@
 package com.w1sh.aperture.web.endpoint;
 
-import com.w1sh.aperture.core.ProviderRegistry;
+import com.w1sh.aperture.core.DefaultProviderRegistry;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.web.DispatcherServlet;
 import com.w1sh.aperture.web.ApertureJettyServer;
@@ -24,7 +24,7 @@ class EndpointDiscovererTest {
 
     @BeforeEach
     void setUp() {
-        ProviderRegistry registry = new ProviderRegistry();
+        DefaultProviderRegistry registry = new DefaultProviderRegistry();
 
         register(registry, CalculatorControllerImpl.class);
         register(registry, QueryParameterMethodArgumentResolver.class);

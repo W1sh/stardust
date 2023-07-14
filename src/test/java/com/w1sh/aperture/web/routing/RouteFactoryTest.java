@@ -1,6 +1,6 @@
 package com.w1sh.aperture.web.routing;
 
-import com.w1sh.aperture.core.ProviderRegistry;
+import com.w1sh.aperture.core.DefaultProviderRegistry;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
 import com.w1sh.aperture.web.endpoint.EndpointFactory;
@@ -21,7 +21,7 @@ class RouteFactoryTest {
 
     @BeforeEach
     void setUp() {
-        ProviderRegistry registry = new ProviderRegistry();
+        DefaultProviderRegistry registry = new DefaultProviderRegistry();
 
         register(registry, CalculatorControllerImpl.class);
         register(registry, QueryParameterMethodArgumentResolver.class);

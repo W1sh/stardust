@@ -4,6 +4,7 @@ import com.w1sh.aperture.core.annotation.Qualifier;
 import com.w1sh.aperture.core.binding.*;
 import com.w1sh.aperture.core.exception.CircularDependencyException;
 import com.w1sh.aperture.core.exception.ComponentCreationException;
+import com.w1sh.aperture.core.exception.ProviderInitializationException;
 import com.w1sh.aperture.core.exception.UnsupportedInitializationContextTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,15 +17,15 @@ public class ProviderFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderFactory.class);
 
-    private final ProviderRegistry registry;
+    private final DefaultProviderRegistry registry;
     private final ProviderPostConstructorProcessor postConstructorProcessor;
 
-    public ProviderFactory(ProviderRegistry registry) {
+    public ProviderFactory(DefaultProviderRegistry registry) {
         this.registry = registry;
         this.postConstructorProcessor = new ProviderPostConstructorProcessor();
     }
 
-    public ProviderFactory(ProviderRegistry registry, ProviderPostConstructorProcessor postConstructorProcessor) {
+    public ProviderFactory(DefaultProviderRegistry registry, ProviderPostConstructorProcessor postConstructorProcessor) {
         this.registry = registry;
         this.postConstructorProcessor = postConstructorProcessor;
     }
@@ -113,7 +114,7 @@ public class ProviderFactory {
             logger.debug("Creating new instance of class {}", constructor.getDeclaringClass());
             return constructor.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ComponentCreationException("Unable to create an instance of the class", e);
+            throw new ProviderInitializationException("Unable to create an instance of the class", e);
         }
     }
 }

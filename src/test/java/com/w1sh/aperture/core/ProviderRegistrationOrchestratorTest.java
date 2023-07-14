@@ -15,11 +15,11 @@ class ProviderRegistrationOrchestratorTest {
 
     private ProviderRegistrationOrchestrator orchestrator;
     private ProviderFactory factory;
-    private ProviderRegistry registry;
+    private DefaultProviderRegistry registry;
 
     @BeforeEach
     void setUp() {
-        registry = spy(new ProviderRegistry());
+        registry = spy(new DefaultProviderRegistry());
         ProviderPostConstructorProcessor postConstructorProcessor = new ProviderPostConstructorProcessor();
         factory = spy(new ProviderFactory(registry, postConstructorProcessor));
         ProviderConditionFactory conditionFactory = new ProviderConditionFactory();

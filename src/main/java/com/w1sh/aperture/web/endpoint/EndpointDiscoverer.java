@@ -1,6 +1,6 @@
 package com.w1sh.aperture.web.endpoint;
 
-import com.w1sh.aperture.core.ProviderRegistry;
+import com.w1sh.aperture.core.DefaultProviderRegistry;
 import com.w1sh.aperture.web.ApertureJettyServer;
 import com.w1sh.aperture.web.routing.Route;
 import com.w1sh.aperture.web.routing.RouteFactory;
@@ -15,11 +15,11 @@ public class EndpointDiscoverer {
 
     private static final Logger logger = LoggerFactory.getLogger(EndpointDiscoverer.class);
 
-    private final ProviderRegistry registry;
+    private final DefaultProviderRegistry registry;
     private final RouteFactory routeFactory;
     private final ApertureJettyServer server;
 
-    public EndpointDiscoverer(ProviderRegistry registry, RouteFactory routeFactory, ApertureJettyServer apertureJettyServer) {
+    public EndpointDiscoverer(DefaultProviderRegistry registry, RouteFactory routeFactory, ApertureJettyServer apertureJettyServer) {
         this.registry = registry;
         this.routeFactory = routeFactory;
         this.server = apertureJettyServer;

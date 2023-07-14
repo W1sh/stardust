@@ -1,5 +1,6 @@
 package com.w1sh.aperture.core;
 
+import com.w1sh.aperture.core.exception.ProviderRegistrationException;
 import com.w1sh.aperture.example.controller.CalculatorController;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
@@ -13,13 +14,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProviderRegistryTest {
+class DefaultProviderRegistryTest {
 
-    private ProviderRegistry registry;
+    private DefaultProviderRegistry registry;
 
     @BeforeEach
     void setUp() {
-        registry = new ProviderRegistry();
+        registry = new DefaultProviderRegistry();
     }
 
     @Test
@@ -87,5 +88,27 @@ class ProviderRegistryTest {
         assertNotNull(classes);
         assertEquals(1, classes.size());
         assertEquals(CalculatorControllerImpl.class, classes.get(0));
+    }
+
+    @Test
+    void should_throwRegistrationException_whenTryingToRegisterClassTwiceButOverrideNotAllowed() {
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        registry.setOverrideStrategy(ProviderRegistry.OverrideStrategy.NOT_ALLOWED);
+        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
+
+        assertThrows(ProviderRegistrationException.class, () ->
+                registry.register(provider2, CalculatorControllerImpl.class, "CalculatorControllerImpl"));
+    }
+
+    @Test
+    void should_throwRegistrationException_whenTryingToRegisterWithSameNameTwiceButOverrideNotAllowed() {
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
+        registry.setOverrideStrategy(ProviderRegistry.OverrideStrategy.NOT_ALLOWED);
+        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
+
+        assertThrows(ProviderRegistrationException.class, () ->
+                registry.register(provider2, DuplicateCalculatorServiceImpl.class, "CalculatorControllerImpl"));
     }
 }

@@ -21,7 +21,7 @@ public class ProviderConditionFactory {
     }
 
     public void register(MetadataConditionFactory<?> factory) {
-        logger.debug("Registering factory for condition {}", Types.getActualTypeArgument(factory.getClass(), 0));
+        logger.debug("Registering factory for condition {}", Types.getInterfaceActualTypeArgument(factory.getClass(), 0));
         metadataConditionFactories.add(factory);
     }
 }

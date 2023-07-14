@@ -2,6 +2,7 @@ package com.w1sh.aperture.core;
 
 import com.w1sh.aperture.core.annotation.Inject;
 import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
 import com.w1sh.aperture.example.service.impl.BetterCalculatorServiceImpl;
 import com.w1sh.aperture.example.service.impl.CalculatorServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ class ConstructorInitializationContextTest {
 
     @Test
     void should_returnNoArgConstructor_whenNoConstructorIsAvailable() {
-        final var context = new ConstructorInitializationContext<>(BetterCalculatorServiceImpl.class, Options.empty());
+        final var context = new ConstructorInitializationContext<>(EmptyCalculatorControllerImpl.class, Options.empty());
 
         assertNotNull(context.getConstructor());
         assertEquals(0, context.getConstructor().getParameterCount());

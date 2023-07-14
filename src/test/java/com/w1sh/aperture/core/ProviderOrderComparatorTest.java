@@ -3,7 +3,6 @@ package com.w1sh.aperture.core;
 import com.w1sh.aperture.core.builder.Options;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
-import com.w1sh.aperture.example.service.CalculatorService;
 import com.w1sh.aperture.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.aperture.example.service.impl.DuplicateCalculatorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ProviderOrderComparatorTest {
 

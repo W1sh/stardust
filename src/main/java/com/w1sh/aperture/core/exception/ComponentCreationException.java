@@ -6,8 +6,4 @@ public class ComponentCreationException extends RuntimeException {
         super(message);
     }
 
-    public ComponentCreationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

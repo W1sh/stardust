@@ -17,7 +17,7 @@ public final class SingletonObjectProvider<T> implements ObjectProvider<T> {
 
     @Override
     public T newInstance() {
-        throw new UnsupportedOperationException("Defined object providers can not provide new instances, only a singleton instance.");
+        throw new UnsupportedOperationException("Singleton object providers can not provide new instances, only a singleton instance.");
     }
 
     @Override

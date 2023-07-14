@@ -1,6 +1,7 @@
 package com.w1sh.aperture.core;
 
-import java.lang.reflect.ParameterizedType;
+import com.w1sh.aperture.core.util.Types;
+
 import java.util.EventListener;
 
 /**
@@ -29,7 +30,7 @@ public interface PhaseEventListener<T extends PhaseEvent> extends EventListener 
      */
     @SuppressWarnings("unchecked")
     default Class<? extends T> getEventType() {
-        return (Class<? extends T>) ((ParameterizedType) getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0];
+        return (Class<? extends T>) Types.getInterfaceActualTypeArgument(getClass(), 0);
     }
 
 }

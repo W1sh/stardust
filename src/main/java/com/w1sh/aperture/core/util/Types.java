@@ -6,7 +6,7 @@ public class Types {
 
     private Types() {}
 
-    public static Class<?> getActualTypeArgument(Class<?> clazz, int index) {
-        return (Class<?>) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[index];
+    public static Class<?> getInterfaceActualTypeArgument(Class<?> clazz, int index) {
+        return (Class<?>) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[index];
     }
 }

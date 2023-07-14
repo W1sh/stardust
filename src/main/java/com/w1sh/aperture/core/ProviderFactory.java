@@ -1,6 +1,7 @@
 package com.w1sh.aperture.core;
 
 import com.w1sh.aperture.core.annotation.Qualifier;
+import com.w1sh.aperture.core.annotation.Required;
 import com.w1sh.aperture.core.binding.*;
 import com.w1sh.aperture.core.exception.CircularDependencyException;
 import com.w1sh.aperture.core.exception.ComponentCreationException;
@@ -63,7 +64,9 @@ public class ProviderFactory {
             final ObjectProvider<?> provider = qualifier != null ? registry.provider(qualifier) : registry.provider(actualParameterType);
 
             if (provider == null) {
-                logger.info("No candidate found for required parameter {}. Registering for initialization.", actualParameterType.getName());
+                if (constructor.getParameters()[i].isAnnotationPresent(Required.class)) {
+                    throw ProviderInitializationException.required(actualParameterType.getSimpleName());
+                }
             } else {
                 if (isWrappedInBinding(paramType)) {
                     params[i] = createBinding((ParameterizedType) paramType);

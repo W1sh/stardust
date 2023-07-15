@@ -1,4 +1,4 @@
-package com.w1sh.aperture.core.builder;
+package com.w1sh.aperture.web.routing;
 
 @FunctionalInterface
 public interface ContextGroup {

@@ -1,36 +1,38 @@
-package com.w1sh.aperture.core.builder;
+package com.w1sh.aperture.core;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public record Options(String name, Integer order, Class<?>[] requiredClasses, Class<?>[] requiredMissingClasses, String[] profiles,
-                      Map<String, String> requiredSystemProperties, boolean timed) {
+public record Metadata(String name, Integer priority, Class<?>[] requiredClasses, Class<?>[] requiredMissingClasses,
+                       String[] profiles, Map<String, String> requiredSystemProperties, Scope scope) {
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public static Options empty() { return Options.builder().build(); }
+    public static Metadata empty() {
+        return Metadata.builder().build();
+    }
 
     public static final class Builder {
 
         private String name;
-        private Integer order;
+        private Integer priority;
         private Map<String, String> requiredSystemProperties = HashMap.newHashMap(8);
         private Class<?>[] requiredClasses;
         private Class<?>[] requiredMissingClasses;
         private String[] profiles;
-        private boolean timed;
+        private Scope scope;
 
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder order(Integer order) {
-            this.order = order;
+        public Builder priority(Integer priority) {
+            this.priority = priority;
             return this;
         }
 
@@ -59,16 +61,13 @@ public record Options(String name, Integer order, Class<?>[] requiredClasses, Cl
             return this;
         }
 
-        public Builder timed() {
-            this.timed = true;
+        public Builder scope(Scope scope) {
+            this.scope = scope;
             return this;
         }
 
-        public Options build() {
-            if (requiredClasses == null) this.requiredClasses = new Class[0];
-            if (requiredMissingClasses == null) this.requiredMissingClasses = new Class[0];
-            if (profiles == null) this.profiles = new String[0];
-            return new Options(name, order, requiredClasses, requiredMissingClasses, profiles, requiredSystemProperties, timed);
+        public Metadata build() {
+            return new Metadata(name, priority, requiredClasses, requiredMissingClasses, profiles, requiredSystemProperties, scope);
         }
     }
 
@@ -76,13 +75,13 @@ public record Options(String name, Integer order, Class<?>[] requiredClasses, Cl
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Options options = (Options) o;
-        return timed == options.timed && Objects.equals(name, options.name) && Arrays.equals(requiredClasses, options.requiredClasses) && Arrays.equals(requiredMissingClasses, options.requiredMissingClasses) && Arrays.equals(profiles, options.profiles) && Objects.equals(requiredSystemProperties, options.requiredSystemProperties);
+        Metadata metadata = (Metadata) o;
+        return Objects.equals(name, metadata.name) && Objects.equals(priority, metadata.priority) && Arrays.equals(requiredClasses, metadata.requiredClasses) && Arrays.equals(requiredMissingClasses, metadata.requiredMissingClasses) && Arrays.equals(profiles, metadata.profiles) && Objects.equals(requiredSystemProperties, metadata.requiredSystemProperties) && scope == metadata.scope;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(name, requiredSystemProperties, timed);
+        int result = Objects.hash(name, priority, requiredSystemProperties, scope);
         result = 31 * result + Arrays.hashCode(requiredClasses);
         result = 31 * result + Arrays.hashCode(requiredMissingClasses);
         result = 31 * result + Arrays.hashCode(profiles);
@@ -91,13 +90,14 @@ public record Options(String name, Integer order, Class<?>[] requiredClasses, Cl
 
     @Override
     public String toString() {
-        return "Options{" +
+        return "Metadata{" +
                 "name='" + name + '\'' +
+                ", priority=" + priority +
                 ", requiredClasses=" + Arrays.toString(requiredClasses) +
                 ", requiredMissingClasses=" + Arrays.toString(requiredMissingClasses) +
                 ", profiles=" + Arrays.toString(profiles) +
                 ", requiredSystemProperties=" + requiredSystemProperties +
-                ", timed=" + timed +
+                ", scope=" + scope +
                 '}';
     }
 }

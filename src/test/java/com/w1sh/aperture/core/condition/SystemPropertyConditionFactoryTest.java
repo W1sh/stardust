@@ -1,6 +1,6 @@
 package com.w1sh.aperture.core.condition;
 
-import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.core.Metadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class SystemPropertyConditionFactoryTest {
 
     @Test
     void should_returnSystemPropertyCondition_whenGivenOptionsWithRequiredSystemProperties() {
-        final var options = Options.builder()
+        final var options = Metadata.builder()
                 .requiredSystemProperty("test", "test")
                 .build();
 
@@ -29,7 +29,7 @@ class SystemPropertyConditionFactoryTest {
 
     @Test
     void should_returnNull_whenGivenOptionsWithNoActiveProfiles() {
-        final var options = Options.empty();
+        final var options = Metadata.empty();
 
         var condition = factory.create(options);
 

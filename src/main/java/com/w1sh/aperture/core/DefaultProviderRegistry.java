@@ -28,7 +28,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
     public DefaultProviderRegistry(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
-        this.register(new SingletonObjectProvider<>(this), this.getClass(), ProviderRegistry.DEFAULT_REGISTRY_NAME);
+        this.register(new SingletonObjectProvider<>(this), DefaultProviderRegistry.class, ProviderRegistry.DEFAULT_REGISTRY_NAME);
     }
 
     @Override
@@ -45,6 +45,11 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
         providers.put(clazz, provider);
         named.put(providerName, provider);
+    }
+
+    @Override
+    public void register(ObjectProvider<?> provider, Definition<?> definition) {
+        register(provider, definition.getClazz(), definition.getMetadata().name());
     }
 
     @Override

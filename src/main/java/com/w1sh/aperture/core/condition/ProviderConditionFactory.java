@@ -1,6 +1,6 @@
 package com.w1sh.aperture.core.condition;
 
-import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.core.Metadata;
 import com.w1sh.aperture.core.util.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ public class ProviderConditionFactory {
 
     private final Set<MetadataConditionFactory<?>> metadataConditionFactories = HashSet.newHashSet(64);
 
-    public List<? extends Condition> create(Options options) {
+    public List<? extends Condition> create(Metadata metadata) {
         return metadataConditionFactories.stream()
-                .map(factory -> factory.create(options))
+                .map(factory -> factory.create(metadata))
                 .filter(Objects::nonNull)
                 .toList();
     }

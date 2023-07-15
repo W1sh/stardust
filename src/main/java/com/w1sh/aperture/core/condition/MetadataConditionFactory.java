@@ -1,8 +1,8 @@
 package com.w1sh.aperture.core.condition;
 
-import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.core.Metadata;
 
 public interface MetadataConditionFactory<T extends Condition> {
 
-    T create(Options options);
+    T create(Metadata metadata);
 }

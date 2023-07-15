@@ -1,7 +1,5 @@
 package com.w1sh.aperture.core;
 
-import com.w1sh.aperture.core.builder.ContextBuilder;
-import com.w1sh.aperture.core.builder.ContextGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +24,6 @@ public class Aperture {
     public Aperture profiles(String... profiles) {
         this.profiles = profiles;
         return this;
-    }
-
-    public void context(ContextGroup contextGroup) {
-        ContextBuilder.setStaticContext(this);
-        if (contextGroup != null) contextGroup.apply();
-        ContextBuilder.clearStaticContext();
     }
 
     public void initialize() {

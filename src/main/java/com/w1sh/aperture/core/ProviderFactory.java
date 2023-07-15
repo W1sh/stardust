@@ -31,21 +31,19 @@ public class ProviderFactory {
         this.postConstructorProcessor = postConstructorProcessor;
     }
 
-    public <T> ObjectProvider<T> create(InitializationContext<T> context) {
-        if (context instanceof ConstructorInitializationContext<T> constructorContext) {
+    public <T> ObjectProvider<T> create(Definition<T> context) {
+        if (context instanceof ClassDefinition<T> constructorContext) {
             T instance = createInstance(constructorContext);
             postConstructorProcessor.process(instance);
             return new SingletonObjectProvider<>(instance);
-        } else if (context instanceof InstanceInitializationContext<T> instanceContext) {
-            return new SingletonObjectProvider<>(instanceContext.getInstance());
-        } else if (context instanceof SupplierInitializationContext<T> supplierContext) {
+        } else if (context instanceof ModuleMethodDefinition<T> supplierContext) {
             return new PrototypeObjectProvider<>(supplierContext.getSupplier());
         }
         logger.error("Unsupported InitializationContext type");
         throw new UnsupportedInitializationContextTypeException();
     }
 
-    private <T> T createInstance(ConstructorInitializationContext<T> context) {
+    private <T> T createInstance(ClassDefinition<T> context) {
         final Constructor<T> constructor = context.getConstructor();
 
         if (constructor.getParameterTypes().length == 0) {

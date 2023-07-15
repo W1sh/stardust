@@ -1,6 +1,6 @@
 package com.w1sh.aperture.core.condition;
 
-import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.core.Metadata;
 import com.w1sh.aperture.example.service.CalculatorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class RequiredClassConditionFactoryTest {
 
     @Test
     void should_returnRequiredClassCondition_whenGivenOptionsWithRequiredClass() {
-        final var options = Options.builder()
+        final var options = Metadata.builder()
                 .conditionalOn(CalculatorService.class)
                 .build();
 
@@ -30,7 +30,7 @@ class RequiredClassConditionFactoryTest {
 
     @Test
     void should_returnNull_whenGivenOptionsWithNoActiveProfiles() {
-        final var options = Options.empty();
+        final var options = Metadata.empty();
 
         var condition = factory.create(options);
 

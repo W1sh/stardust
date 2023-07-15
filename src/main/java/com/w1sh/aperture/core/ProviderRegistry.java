@@ -8,6 +8,8 @@ public interface ProviderRegistry {
 
     void register(ObjectProvider<?> provider, Class<?> clazz, String name);
 
+    void register(ObjectProvider<?> provider, Definition<?> definition);
+
     <T> T instance(Class<T> clazz);
 
     <T> T instance(String name);

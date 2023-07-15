@@ -1,6 +1,6 @@
 package com.w1sh.aperture.core.condition;
 
-import com.w1sh.aperture.core.builder.Options;
+import com.w1sh.aperture.core.Metadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ class ProviderConditionFactoryTest {
 
     @Test
     void should_returnNoConditions_whenGivenDefaultOptions() {
-        final var options = Options.empty();
+        final var options = Metadata.empty();
 
         var conditions = factory.create(options);
 

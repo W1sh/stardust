@@ -2,9 +2,11 @@ package com.w1sh.aperture.core.annotation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
 @Inherited
 @Documented
-public @interface Required {
+public @interface Profile {
+
+    String[] value();
 }

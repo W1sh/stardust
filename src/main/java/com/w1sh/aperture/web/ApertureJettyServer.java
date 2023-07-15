@@ -1,9 +1,9 @@
 package com.w1sh.aperture.web;
 
 import com.w1sh.aperture.core.annotation.Inject;
-import com.w1sh.aperture.core.builder.ContextGroup;
 import com.w1sh.aperture.web.endpoint.core.HealthEndpoint;
 import com.w1sh.aperture.web.endpoint.core.ShutdownEndpoint;
+import com.w1sh.aperture.web.routing.ContextGroup;
 import com.w1sh.aperture.web.routing.Route;
 import com.w1sh.aperture.web.routing.RouteBuilder;
 import org.eclipse.jetty.server.Server;

@@ -3,6 +3,7 @@ package com.w1sh.aperture.core;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -24,9 +25,16 @@ public class ModuleInspector {
                 .toList();
     }
 
-    public static List<Class<?>> find(String module) {
+    public static List<Class<?>> findAllAnnotatedBy(Class<? extends Annotation> annotation) {
+        return ModuleInspector.find(MODULE_NAME)
+                .stream()
+                .filter(aClass -> aClass.isAnnotationPresent(annotation))
+                .toList();
+    }
+
+    private static List<Class<?>> find(String module) {
         return ModuleLayer.boot().findModule(module)
-                .map(Module::getPackages)
+                .map(java.lang.Module::getPackages)
                 .orElse(new HashSet<>())
                 .stream()
                 .map(ModuleInspector::findAllClassesUsingClassLoader)

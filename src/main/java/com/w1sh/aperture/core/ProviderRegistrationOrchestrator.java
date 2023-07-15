@@ -5,6 +5,9 @@ import com.w1sh.aperture.core.condition.Condition;
 import com.w1sh.aperture.core.condition.MetadataConditionFactory;
 import com.w1sh.aperture.core.condition.ProviderConditionEvaluator;
 import com.w1sh.aperture.core.condition.ProviderConditionFactory;
+import com.w1sh.aperture.core.event.PhaseEvent;
+import com.w1sh.aperture.core.event.PhaseEventListener;
+import com.w1sh.aperture.core.event.PhaseEventMulticaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

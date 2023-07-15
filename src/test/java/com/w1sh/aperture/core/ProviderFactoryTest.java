@@ -23,8 +23,7 @@ class ProviderFactoryTest {
     @BeforeEach
     void setUp() {
         registry = spy(new DefaultProviderRegistry());
-        ProviderPostConstructorProcessor postConstructorProcessor = new ProviderPostConstructorProcessor();
-        factory = new ProviderFactory(registry, postConstructorProcessor);
+        factory = new ProviderFactory(registry);
     }
 
     @Test

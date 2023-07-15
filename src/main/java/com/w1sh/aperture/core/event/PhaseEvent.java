@@ -1,4 +1,4 @@
-package com.w1sh.aperture.core;
+package com.w1sh.aperture.core.event;
 
 public abstract class PhaseEvent {
 

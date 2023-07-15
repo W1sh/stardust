@@ -8,13 +8,9 @@ import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.LinkedList;
 
-public class ProviderPostConstructorProcessor {
+public class DefaultPostConstructorProcessor implements PostConstructorProcessor{
 
-    /**
-     * Invokes all the methods annotated with {@link javax.annotation.PostConstruct} annotation for the given instance.
-     *
-     * @param instance The object instance to invoke the methods on.
-     */
+    @Override
     public void process(Object instance) {
         final Deque<Method> postConstructMethods = new LinkedList<>();
         for (Class<?> clazz = instance.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {

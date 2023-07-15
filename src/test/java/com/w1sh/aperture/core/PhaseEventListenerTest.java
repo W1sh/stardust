@@ -2,6 +2,9 @@ package com.w1sh.aperture.core;
 
 import com.w1sh.aperture.core.condition.ProviderConditionEvaluator;
 import com.w1sh.aperture.core.condition.ProviderConditionFactory;
+import com.w1sh.aperture.core.event.ConfigurationPhaseStartEvent;
+import com.w1sh.aperture.core.event.PhaseEventListener;
+import com.w1sh.aperture.core.event.RegistrationPhaseEndEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +19,7 @@ class PhaseEventListenerTest {
     @BeforeEach
     void setUp() {
         DefaultProviderRegistry registry = spy(new DefaultProviderRegistry());
-        ProviderPostConstructorProcessor postConstructorProcessor = new ProviderPostConstructorProcessor();
-        ProviderFactory factory = spy(new ProviderFactory(registry, postConstructorProcessor));
+        ProviderFactory factory = spy(new ProviderFactory(registry));
         ProviderConditionFactory conditionFactory = new ProviderConditionFactory();
         ProviderConditionEvaluator conditionEvaluator = new ProviderConditionEvaluator(registry, new Environment(new HashSet<>()));
         orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionFactory, conditionEvaluator);

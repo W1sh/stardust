@@ -19,16 +19,11 @@ public class ProviderFactory {
     private static final Logger logger = LoggerFactory.getLogger(ProviderFactory.class);
 
     private final DefaultProviderRegistry registry;
-    private final ProviderPostConstructorProcessor postConstructorProcessor;
+    private final PostConstructorProcessor postConstructorProcessor;
 
     public ProviderFactory(DefaultProviderRegistry registry) {
         this.registry = registry;
-        this.postConstructorProcessor = new ProviderPostConstructorProcessor();
-    }
-
-    public ProviderFactory(DefaultProviderRegistry registry, ProviderPostConstructorProcessor postConstructorProcessor) {
-        this.registry = registry;
-        this.postConstructorProcessor = postConstructorProcessor;
+        this.postConstructorProcessor = new DefaultPostConstructorProcessor();
     }
 
     public <T> ObjectProvider<T> create(Definition<T> context) {

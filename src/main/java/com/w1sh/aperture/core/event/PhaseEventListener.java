@@ -1,4 +1,4 @@
-package com.w1sh.aperture.core;
+package com.w1sh.aperture.core.event;
 
 import com.w1sh.aperture.core.util.Types;
 

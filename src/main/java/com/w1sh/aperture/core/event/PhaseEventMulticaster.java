@@ -1,4 +1,4 @@
-package com.w1sh.aperture.core;
+package com.w1sh.aperture.core.event;
 
 /**
  * Interface to be implemented by aperture event publishers.

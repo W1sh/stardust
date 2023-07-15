@@ -23,13 +23,13 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
     private final List<Definition<?>> pendingRegistrations = new ArrayList<>(256);
     private final List<PhaseEventListener> listeners = new ArrayList<>(64);
 
-    private final ProviderFactory factory;
+    private final DefaultProviderFactory factory;
     private final ProviderRegistry registry;
     private final ModuleAwareDefinitionFactory definitionFactory;
     private final ProviderConditionFactory conditionFactory;
     private final ProviderConditionEvaluator conditionEvaluator;
 
-    public ProviderRegistrationOrchestrator(DefaultProviderRegistry registry, ProviderFactory factory, Environment environment) {
+    public ProviderRegistrationOrchestrator(DefaultProviderRegistry registry, DefaultProviderFactory factory, Environment environment) {
         this.factory = factory;
         this.registry = registry;
         this.definitionFactory = new DefaultDefinitionFactory();
@@ -37,7 +37,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
         this.conditionEvaluator = new ProviderConditionEvaluator(registry, environment);
     }
 
-    public ProviderRegistrationOrchestrator(ProviderFactory factory, DefaultProviderRegistry registry,
+    public ProviderRegistrationOrchestrator(DefaultProviderFactory factory, DefaultProviderRegistry registry,
                                             ProviderConditionFactory conditionFactory, ProviderConditionEvaluator conditionEvaluator) {
         this.factory = factory;
         this.registry = registry;
@@ -77,7 +77,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
                 if (shouldSkip) {
                     logger.info("Skipping registration of class {} as the conditions are not met", definition.getClazz().getSimpleName());
                 } else {
-                    ObjectProvider<?> provider = factory.create(definition);
+                    ObjectProvider<?> provider = factory.newProvider(definition);
                     registry.register(provider, definition);
                 }
             } else {
@@ -94,7 +94,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
             if (shouldSkip) {
                 logger.info("Skipping registration of class {} as the conditions are not met", definition.getClazz().getSimpleName());
             } else {
-                ObjectProvider<?> provider = factory.create(definition);
+                ObjectProvider<?> provider = factory.newProvider(definition);
                 registry.register(provider, definition);
             }
         });
@@ -109,7 +109,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
         conditionFactories.stream()
                 .map(definitionFactory::fromClass)
                 .forEach(definition -> {
-                    ObjectProvider<?> provider = factory.create(definition);
+                    ObjectProvider<?> provider = factory.newProvider(definition);
                     registry.register(provider, definition);
                 });
 
@@ -124,7 +124,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
                 .map(definitionFactory::fromModule)
                 .flatMap(Collection::stream)
                 .forEach(definition -> {
-                    ObjectProvider<?> provider = factory.create(definition);
+                    ObjectProvider<?> provider = factory.newProvider(definition);
                     registry.register(provider, definition);
                 });
     }
@@ -136,7 +136,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
         annotatedProviders.stream()
                 .map(definitionFactory::fromClass)
                 .forEach(definition -> {
-                    ObjectProvider<?> provider = factory.create(definition);
+                    ObjectProvider<?> provider = factory.newProvider(definition);
                     registry.register(provider, definition);
                 });
     }

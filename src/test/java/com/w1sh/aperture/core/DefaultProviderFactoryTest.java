@@ -15,22 +15,22 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ProviderFactoryTest {
+class DefaultProviderFactoryTest {
 
-    private ProviderFactory factory;
+    private DefaultProviderFactory factory;
     private DefaultProviderRegistry registry;
 
     @BeforeEach
     void setUp() {
         registry = spy(new DefaultProviderRegistry());
-        factory = new ProviderFactory(registry);
+        factory = new DefaultProviderFactory(registry);
     }
 
     @Test
     void should_returnProvider_whenGivenValidConstructorInitializationContext() {
         final var context = Tests.definition(DuplicateCalculatorServiceImpl.class);
 
-        ObjectProvider<?> provider = factory.create(context);
+        ObjectProvider<?> provider = factory.newProvider(context);
 
         assertNotNull(provider);
         assertNotNull(provider.singletonInstance());
@@ -41,7 +41,7 @@ class ProviderFactoryTest {
         final var context = new ModuleMethodDefinition<>(DuplicateCalculatorServiceImpl.class, Metadata.empty(),
                 DuplicateCalculatorServiceImpl::new);
 
-        ObjectProvider<?> provider = factory.create(context);
+        ObjectProvider<?> provider = factory.newProvider(context);
 
         assertNotNull(provider);
         assertNotNull(provider.singletonInstance());
@@ -51,7 +51,7 @@ class ProviderFactoryTest {
     void should_returnProviderWithInstanceWithNullVariable_whenConstructorInitializationContextOfClass() {
         final var context = Tests.definition(BetterCalculatorServiceImpl.class);
 
-        ObjectProvider<?> provider = factory.create(context);
+        ObjectProvider<?> provider = factory.newProvider(context);
 
         assertNotNull(provider);
         assertNotNull(provider.singletonInstance());
@@ -63,9 +63,9 @@ class ProviderFactoryTest {
         final var merchantContext = Tests.definition(MerchantServiceImpl.class);
         final var calculatorContext = Tests.definition(BetterCalculatorServiceImpl.class);
 
-        ObjectProvider<?> merchantProvider = factory.create(merchantContext);
+        ObjectProvider<?> merchantProvider = factory.newProvider(merchantContext);
         registry.register(merchantProvider, MerchantServiceImpl.class, "");
-        ObjectProvider<?> calculatorProvider = factory.create(calculatorContext);
+        ObjectProvider<?> calculatorProvider = factory.newProvider(calculatorContext);
 
         assertNotNull(calculatorProvider);
         assertNotNull(calculatorProvider.singletonInstance());
@@ -77,7 +77,7 @@ class ProviderFactoryTest {
     void should_throwInitializationException_whenConstructorInitializationContextOfClassWithRequiredParameter() {
         final var context = Tests.definition(RequiredParameterCalculatorService.class);
 
-        assertThrows(ProviderInitializationException.class, () -> factory.create(context));
+        assertThrows(ProviderInitializationException.class, () -> factory.newProvider(context));
     }
 
     private static class RequiredParameterCalculatorService implements CalculatorService {

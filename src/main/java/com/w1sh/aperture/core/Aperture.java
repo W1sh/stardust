@@ -11,14 +11,14 @@ public class Aperture {
 
     private ProviderRegistrationOrchestrator orchestrator;
     private DefaultProviderRegistry registry;
-    private ProviderFactory factory;
+    private DefaultProviderFactory factory;
     private Environment environment;
 
     private String[] profiles;
 
     public Aperture() {
         this.registry = new DefaultProviderRegistry();
-        this.factory = new ProviderFactory(registry);
+        this.factory = new DefaultProviderFactory(registry);
     }
 
     public Aperture profiles(String... profiles) {

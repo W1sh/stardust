@@ -13,13 +13,13 @@ import static org.mockito.Mockito.*;
 class ProviderRegistrationOrchestratorTest {
 
     private ProviderRegistrationOrchestrator orchestrator;
-    private ProviderFactory factory;
+    private DefaultProviderFactory factory;
     private DefaultProviderRegistry registry;
 
     @BeforeEach
     void setUp() {
         registry = spy(new DefaultProviderRegistry());
-        factory = spy(new ProviderFactory(registry));
+        factory = spy(new DefaultProviderFactory(registry));
         ProviderConditionFactory conditionFactory = new ProviderConditionFactory();
         ProviderConditionEvaluator conditionEvaluator = new ProviderConditionEvaluator(registry, new Environment(new HashSet<>()));
         orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionFactory, conditionEvaluator);
@@ -31,7 +31,7 @@ class ProviderRegistrationOrchestratorTest {
 
         orchestrator.orchestrate();
 
-        verify(factory, times(1)).create(any());
+        verify(factory, times(1)).newProvider(any());
         verify(registry, times(1)).register(any(), any(), any());
     }
 

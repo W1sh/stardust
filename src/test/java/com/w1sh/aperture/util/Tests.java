@@ -2,15 +2,15 @@ package com.w1sh.aperture.util;
 
 import com.w1sh.aperture.core.ClassDefinition;
 import com.w1sh.aperture.core.Metadata;
-import com.w1sh.aperture.core.ProviderFactory;
+import com.w1sh.aperture.core.DefaultProviderFactory;
 import com.w1sh.aperture.core.DefaultProviderRegistry;
 import com.w1sh.aperture.core.util.Constructors;
 
 public class Tests {
 
     public static <T> void register(DefaultProviderRegistry registry, Class<T> clazz) {
-        var factory = new ProviderFactory(registry);
-        var provider = factory.create(definition(clazz));
+        var factory = new DefaultProviderFactory(registry);
+        var provider = factory.newProvider(definition(clazz));
         registry.register(provider, clazz, clazz.getSimpleName());
     }
 

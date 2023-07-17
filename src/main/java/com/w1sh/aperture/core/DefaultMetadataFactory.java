@@ -1,11 +1,12 @@
 package com.w1sh.aperture.core;
 
+import com.w1sh.aperture.core.annotation.Primary;
 import com.w1sh.aperture.core.annotation.Profile;
 import com.w1sh.aperture.core.annotation.Provide;
 
 import javax.annotation.Priority;
 
-public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory{
+public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory {
 
     @Override
     public Metadata create(Class<?> clazz) {
@@ -16,9 +17,11 @@ public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory{
         var priority = priorityAnnotation != null ? priorityAnnotation.value() : null;
         Profile profileAnnotation = clazz.getAnnotation(Profile.class);
         var profiles = profileAnnotation != null ? profileAnnotation.value() : null;
+        var primary = clazz.getAnnotation(Primary.class) != null;
 
         return Metadata.builder()
                 .name(name)
+                .primary(primary)
                 .scope(scope)
                 .profiles(profiles)
                 .priority(priority)
@@ -30,6 +33,7 @@ public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory{
         Metadata classMetadata = create(clazz);
         return Metadata.builder()
                 .name(mergeValue(classMetadata.name(), metadata.name()))
+                .primary(mergeValue(classMetadata.primary(), metadata.primary()))
                 .scope(mergeValue(classMetadata.scope(), metadata.scope()))
                 .priority(mergeValue(classMetadata.priority(), metadata.priority()))
                 .profiles(mergeValue(classMetadata.profiles(), metadata.profiles()))

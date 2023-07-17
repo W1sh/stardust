@@ -14,6 +14,10 @@ public interface ProviderRegistry {
 
     <T> T instance(String name);
 
+    <T> T primaryInstance(Class<T> clazz);
+
+    <T> ObjectProvider<T> primaryProvider(Class<T> clazz);
+
     <T> List<T> instances(Class<T> clazz);
 
     <T> List<T> instances(TypeReference<T> typeReference) ;

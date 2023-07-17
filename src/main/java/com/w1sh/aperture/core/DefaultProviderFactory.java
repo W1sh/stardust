@@ -17,10 +17,10 @@ public class DefaultProviderFactory implements ProviderFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProviderFactory.class);
 
-    private final DefaultProviderRegistry registry;
+    private final ProviderRegistry registry;
     private final PostConstructorProcessor postConstructorProcessor;
 
-    public DefaultProviderFactory(DefaultProviderRegistry registry) {
+    public DefaultProviderFactory(ProviderRegistry registry) {
         this.registry = registry;
         this.postConstructorProcessor = new DefaultPostConstructorProcessor();
     }
@@ -82,6 +82,12 @@ public class DefaultProviderFactory implements ProviderFactory {
         }
         return newInstance(constructor, params);
     }
+
+    /**
+     * private Object resolveParameter(Parameter parameter) {
+     * <p>
+     * }
+     **/
 
     private <T> boolean containsCircularDependency(Constructor<T> constructor, Set<Class<?>> chain) {
         return Arrays.stream(constructor.getParameterTypes())

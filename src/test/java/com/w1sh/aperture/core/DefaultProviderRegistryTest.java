@@ -1,11 +1,13 @@
 package com.w1sh.aperture.core;
 
+import com.w1sh.aperture.core.exception.ProviderCandidatesException;
 import com.w1sh.aperture.core.exception.ProviderRegistrationException;
 import com.w1sh.aperture.example.controller.CalculatorController;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
 import com.w1sh.aperture.example.service.CalculatorService;
 import com.w1sh.aperture.example.service.impl.DuplicateCalculatorServiceImpl;
+import com.w1sh.aperture.util.Tests;
 import jakarta.ws.rs.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -110,5 +112,55 @@ class DefaultProviderRegistryTest {
 
         assertThrows(ProviderRegistrationException.class, () ->
                 registry.register(provider2, DuplicateCalculatorServiceImpl.class, "CalculatorControllerImpl"));
+    }
+
+    @Test
+    void should_returnPrimaryInstanceOrProvider_whenMultipleProvidersAreRegisteredAndOneIsPrimary() {
+        final var definition1 = Tests.definition(CalculatorControllerImpl.class, Metadata.builder()
+                .primary(true)
+                .build());
+        final var definition2 = Tests.definition(DuplicateCalculatorServiceImpl.class);
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
+        registry.register(provider1, definition1);
+        registry.register(provider2, definition2);
+
+        CalculatorController instance = registry.primaryInstance(CalculatorController.class);
+        ObjectProvider<CalculatorController> provider = registry.primaryProvider(CalculatorController.class);
+
+        assertNotNull(provider);
+        assertEquals(CalculatorControllerImpl.class, provider.singletonInstance().getClass());
+        assertNotNull(instance);
+        assertEquals(CalculatorControllerImpl.class, instance.getClass());
+    }
+
+    @Test
+    void should_throwProviderCandidatesException_whenMultiplePrimaryProvidersAreRegistered() {
+        final var definition1 = Tests.definition(CalculatorControllerImpl.class, Metadata.builder()
+                .primary(true)
+                .build());
+        final var definition2 = Tests.definition(EmptyCalculatorControllerImpl.class, Metadata.builder()
+                .primary(true)
+                .build());
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
+        registry.register(provider1, definition1);
+        registry.register(provider2, definition2);
+
+        assertThrows(ProviderCandidatesException.class, () -> registry.primaryInstance(CalculatorController.class));
+        assertThrows(ProviderCandidatesException.class, () -> registry.primaryProvider(CalculatorController.class));
+    }
+
+    @Test
+    void should_throwProviderCandidatesException_whenNoPrimaryProvidersAreRegistered() {
+        final var definition1 = Tests.definition(CalculatorControllerImpl.class);
+        final var definition2 = Tests.definition(EmptyCalculatorControllerImpl.class);
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
+        registry.register(provider1, definition1);
+        registry.register(provider2, definition2);
+
+        assertThrows(ProviderCandidatesException.class, () -> registry.primaryInstance(CalculatorController.class));
+        assertThrows(ProviderCandidatesException.class, () -> registry.primaryProvider(CalculatorController.class));
     }
 }

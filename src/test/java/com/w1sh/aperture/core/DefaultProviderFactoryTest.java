@@ -75,7 +75,9 @@ class DefaultProviderFactoryTest {
 
     @Test
     void should_throwInitializationException_whenConstructorInitializationContextOfClassWithRequiredParameter() {
-        final var context = Tests.definition(RequiredParameterCalculatorService.class);
+        final var context = Tests.definition(RequiredParameterCalculatorService.class, Metadata.builder()
+                .scope(Scope.SINGLETON)
+                .build());
 
         assertThrows(ProviderInitializationException.class, () -> factory.newProvider(context));
     }

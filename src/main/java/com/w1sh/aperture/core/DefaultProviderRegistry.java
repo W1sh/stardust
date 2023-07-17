@@ -1,6 +1,6 @@
 package com.w1sh.aperture.core;
 
-import com.w1sh.aperture.core.exception.MultipleProviderCandidatesException;
+import com.w1sh.aperture.core.exception.ProviderCandidatesException;
 import com.w1sh.aperture.core.exception.ProviderRegistrationException;
 import com.w1sh.aperture.core.naming.DefaultNamingStrategy;
 import com.w1sh.aperture.core.naming.NamingStrategy;
@@ -17,6 +17,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     private static final Logger logger = LoggerFactory.getLogger(DefaultProviderRegistry.class);
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
+    private final Map<Class<?>, Metadata> metadatas = new ConcurrentHashMap<>(256);
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
     private final NamingStrategy namingStrategy;
 
@@ -50,6 +51,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     @Override
     public void register(ObjectProvider<?> provider, Definition<?> definition) {
         register(provider, definition.getClazz(), definition.getMetadata().name());
+        metadatas.put(definition.getClazz(), definition.getMetadata());
     }
 
     @Override
@@ -64,6 +66,30 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     public <T> T instance(String name) {
         ObjectProvider<?> provider = named.get(name);
         return provider != null ? (T) provider.singletonInstance() : null;
+    }
+
+    @Override
+    public <T> T primaryInstance(Class<T> clazz) {
+        return primaryProvider(clazz).singletonInstance();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> ObjectProvider<T> primaryProvider(Class<T> clazz) {
+        List<? extends ObjectProvider<?>> primaries = providers.entrySet().stream()
+                .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
+                .filter(entry -> isPrimary(metadatas.get(entry.getKey())))
+                .map(Map.Entry::getValue)
+                .toList();
+
+        if (primaries.isEmpty()) {
+            logger.error("Expected 1 primary candidate but found none for class {}", clazz);
+            throw new ProviderCandidatesException(0, clazz);
+        } else if (primaries.size() > 1) {
+            logger.error("Expected 1 primary candidate but found {} for class {}", primaries.size(), clazz);
+            throw new ProviderCandidatesException(primaries.size(), clazz);
+        }
+        return (ObjectProvider<T>) primaries.get(0);
     }
 
     @Override
@@ -131,7 +157,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
         if (candidates.size() > 1) {
             logger.error("Expected 1 candidate but found {} for class {}", candidates.size(), clazz);
-            throw new MultipleProviderCandidatesException(candidates.size(), clazz);
+            throw new ProviderCandidatesException(candidates.size(), clazz);
         }
         return candidates.isEmpty() ? null : (ObjectProvider<T>) candidates.get(0);
     }
@@ -141,5 +167,9 @@ public class DefaultProviderRegistry implements ProviderRegistry {
                 .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .toList();
+    }
+
+    private boolean isPrimary(Metadata metadata) {
+        return metadata != null && metadata.primary() != null && metadata.primary();
     }
 }

@@ -35,6 +35,10 @@ public abstract class TypeReference<T> implements Comparable<TypeReference<T>> {
         return type;
     }
 
+    public Class<?> getRawType() {
+        return (Class<?>)((ParameterizedType) type).getRawType();
+    }
+
     /**
      * The only reason we define this method is to prevent constructing a
      * reference without type information.

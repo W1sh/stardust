@@ -1,5 +1,6 @@
 package com.w1sh.aperture.core;
 
+import com.w1sh.aperture.core.condition.*;
 import com.w1sh.aperture.core.exception.ProviderCandidatesException;
 import com.w1sh.aperture.core.exception.ProviderRegistrationException;
 import com.w1sh.aperture.example.controller.CalculatorController;
@@ -193,5 +194,21 @@ class DefaultProviderRegistryTest {
 
         assertTrue(containsClass);
         assertTrue(containsName);
+    }
+
+    @Test
+    void should_returnAllInstances_whenMultipleProvidersAreRegisteredForTypeReference() {
+        final var provider1 = new SingletonObjectProvider<>(new ActiveProfileConditionFactory());
+        final var provider2 = new SingletonObjectProvider<>(new SystemPropertyConditionFactory());
+        registry.register(provider1, ActiveProfileConditionFactory.class, "ActiveProfileConditionFactory");
+        registry.register(provider2, SystemPropertyConditionFactory.class, "SystemPropertyConditionFactory");
+
+        List<MetadataConditionFactory<ActiveProfileCondition>> instances1 = registry.instances(new TypeReference<>() {});
+        List<MetadataConditionFactory<Condition>> instances2 = registry.instances(new TypeReference<>() {});
+
+        assertNotNull(instances1);
+        assertEquals(1, instances1.size());
+        assertNotNull(instances2);
+        assertEquals(2, instances2.size());
     }
 }

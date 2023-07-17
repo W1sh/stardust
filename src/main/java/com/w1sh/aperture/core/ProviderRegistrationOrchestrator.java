@@ -113,7 +113,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
                     registry.register(provider, definition);
                 });
 
-        registry.instances(new TypeReference<MetadataConditionFactory<?>>() {}).forEach(conditionFactory::register);
+        registry.instances(new TypeReference<MetadataConditionFactory<Condition>>() {}).forEach(conditionFactory::register);
     }
 
     private void registerModules() {

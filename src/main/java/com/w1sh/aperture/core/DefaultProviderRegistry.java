@@ -4,10 +4,12 @@ import com.w1sh.aperture.core.exception.ProviderCandidatesException;
 import com.w1sh.aperture.core.exception.ProviderRegistrationException;
 import com.w1sh.aperture.core.naming.DefaultNamingStrategy;
 import com.w1sh.aperture.core.naming.NamingStrategy;
+import com.w1sh.aperture.core.util.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -103,8 +105,11 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> instances(TypeReference<T> typeReference) {
-        return (List<T>) candidates(typeReference.getType().getClass()).stream()
-                .map(ObjectProvider::singletonInstance)
+        return (List<T>) providers.entrySet().stream()
+                .filter(entry -> typeReference.getRawType().isAssignableFrom(entry.getKey()))
+                .filter(entry -> ((Class<?>)((ParameterizedType) typeReference.getType()).getActualTypeArguments()[0])
+                        .isAssignableFrom(Types.getInterfaceActualTypeArgument(entry.getKey(), 0)))
+                .map(entry -> entry.getValue().singletonInstance())
                 .toList();
     }
 

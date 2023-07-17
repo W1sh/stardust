@@ -1,8 +1,6 @@
-package com.w1sh.aperture.core.definition;
+package com.w1sh.aperture.core;
 
-import com.w1sh.aperture.core.DefaultMetadataFactory;
-import com.w1sh.aperture.core.Metadata;
-import com.w1sh.aperture.core.Scope;
+import com.w1sh.aperture.core.annotation.Primary;
 import com.w1sh.aperture.core.annotation.Profile;
 import com.w1sh.aperture.core.annotation.Provide;
 import com.w1sh.aperture.core.exception.MetadataProcessingException;
@@ -26,6 +24,7 @@ class DefaultMetadataFactoryTest {
         assertEquals(Scope.PROTOTYPE, metadata.scope());
         assertEquals(1, metadata.profiles().length);
         assertEquals("test", metadata.profiles()[0]);
+        assertEquals(true, metadata.primary());
     }
 
     @Test
@@ -49,6 +48,7 @@ class DefaultMetadataFactoryTest {
         assertEquals(Scope.PROTOTYPE, metadata.scope());
         assertEquals(1, metadata.profiles().length);
         assertEquals("test", metadata.profiles()[0]);
+        assertEquals(true, metadata.primary());
     }
 
     @Test
@@ -58,6 +58,7 @@ class DefaultMetadataFactoryTest {
                 metadataFactory.merge(AnnotatedClass.class, metadata));
     }
 
+    @Primary
     @Provide(value = "ann", scope = Scope.PROTOTYPE)
     @Profile("test")
     @Priority(1)

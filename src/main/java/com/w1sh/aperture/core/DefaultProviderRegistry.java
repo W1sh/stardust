@@ -127,7 +127,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
     @Override
     public <T> boolean contains(Class<T> clazz) {
-        return get(clazz) != null;
+        return !candidates(clazz).isEmpty();
     }
 
     @Override

@@ -110,6 +110,7 @@ class DefaultProviderRegistryTest {
         registry.setOverrideStrategy(ProviderRegistry.OverrideStrategy.NOT_ALLOWED);
         registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
 
+        assertEquals(ProviderRegistry.OverrideStrategy.NOT_ALLOWED, registry.getOverrideStrategy());
         assertThrows(ProviderRegistrationException.class, () ->
                 registry.register(provider2, DuplicateCalculatorServiceImpl.class, "CalculatorControllerImpl"));
     }
@@ -162,5 +163,35 @@ class DefaultProviderRegistryTest {
 
         assertThrows(ProviderCandidatesException.class, () -> registry.primaryInstance(CalculatorController.class));
         assertThrows(ProviderCandidatesException.class, () -> registry.primaryProvider(CalculatorController.class));
+    }
+
+    @Test
+    void should_returnAllInstances_whenMultipleProvidersAreRegisteredForClass() {
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
+        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
+        registry.register(provider2, EmptyCalculatorControllerImpl.class, "EmptyCalculatorControllerImpl");
+
+        List<CalculatorController> instances = registry.instances(CalculatorController.class);
+        List<ObjectProvider<CalculatorController>> providers = registry.providers(CalculatorController.class);
+
+        assertNotNull(instances);
+        assertNotNull(providers);
+        assertEquals(2, instances.size());
+        assertEquals(2, providers.size());
+    }
+
+    @Test
+    void should_returnTrue_whenThereIsAtLeastOneProviderRegisteredForClass() {
+        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
+        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
+        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
+        registry.register(provider2, EmptyCalculatorControllerImpl.class, "EmptyCalculatorControllerImpl");
+
+        boolean containsClass = registry.contains(CalculatorController.class);
+        boolean containsName = registry.contains("CalculatorControllerImpl");
+
+        assertTrue(containsClass);
+        assertTrue(containsName);
     }
 }

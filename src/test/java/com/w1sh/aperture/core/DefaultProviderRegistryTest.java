@@ -1,5 +1,6 @@
 package com.w1sh.aperture.core;
 
+import com.w1sh.aperture.core.annotation.Primary;
 import com.w1sh.aperture.core.condition.*;
 import com.w1sh.aperture.core.exception.ProviderCandidatesException;
 import com.w1sh.aperture.core.exception.ProviderRegistrationException;
@@ -9,7 +10,6 @@ import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
 import com.w1sh.aperture.example.service.CalculatorService;
 import com.w1sh.aperture.example.service.impl.DuplicateCalculatorServiceImpl;
 import com.w1sh.aperture.util.Tests;
-import jakarta.ws.rs.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -86,7 +86,7 @@ class DefaultProviderRegistryTest {
         registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
         registry.register(provider2, EmptyCalculatorControllerImpl.class, "EmptyCalculatorControllerImpl");
 
-        List<Class<?>> classes = registry.getAllAnnotatedWith(Path.class);
+        List<Class<?>> classes = registry.getAllAnnotatedWith(Primary.class);
 
         assertNotNull(classes);
         assertEquals(1, classes.size());

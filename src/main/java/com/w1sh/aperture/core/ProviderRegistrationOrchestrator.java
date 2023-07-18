@@ -3,8 +3,7 @@ package com.w1sh.aperture.core;
 import com.w1sh.aperture.core.annotation.Provide;
 import com.w1sh.aperture.core.condition.Condition;
 import com.w1sh.aperture.core.condition.MetadataConditionFactory;
-import com.w1sh.aperture.core.condition.ProviderConditionEvaluator;
-import com.w1sh.aperture.core.condition.ProviderConditionFactory;
+import com.w1sh.aperture.core.condition.DefaultConditionProcessor;
 import com.w1sh.aperture.core.event.PhaseEvent;
 import com.w1sh.aperture.core.event.PhaseEventListener;
 import com.w1sh.aperture.core.event.PhaseEventMulticaster;
@@ -26,24 +25,21 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
     private final DefaultProviderFactory factory;
     private final ProviderRegistry registry;
     private final AnnotationAwareDefinitionFactory definitionFactory;
-    private final ProviderConditionFactory conditionFactory;
-    private final ProviderConditionEvaluator conditionEvaluator;
+    private final DefaultConditionProcessor conditionProcessor;
 
     public ProviderRegistrationOrchestrator(DefaultProviderRegistry registry, DefaultProviderFactory factory, Environment environment) {
         this.factory = factory;
         this.registry = registry;
         this.definitionFactory = new DefaultDefinitionFactory(registry);
-        this.conditionFactory = new ProviderConditionFactory();
-        this.conditionEvaluator = new ProviderConditionEvaluator(registry, environment);
+        this.conditionProcessor = new DefaultConditionProcessor(registry, environment);
     }
 
     public ProviderRegistrationOrchestrator(DefaultProviderFactory factory, DefaultProviderRegistry registry,
-                                            ProviderConditionFactory conditionFactory, ProviderConditionEvaluator conditionEvaluator) {
+                                            DefaultConditionProcessor conditionProcessor) {
         this.factory = factory;
         this.registry = registry;
         this.definitionFactory = new DefaultDefinitionFactory(registry);
-        this.conditionFactory = conditionFactory;
-        this.conditionEvaluator = conditionEvaluator;
+        this.conditionProcessor = conditionProcessor;
     }
 
     public <T> void register(Class<T> clazz) {
@@ -70,10 +66,10 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
 
         pendingRegistrations.forEach(definition -> {
             logger.debug("Starting registration for class {}", definition.getClazz());
-            List<? extends Condition> conditions = conditionFactory.create(definition.getMetadata());
+            List<? extends Condition> conditions = conditionProcessor.create(definition.getMetadata());
 
-            if (conditionEvaluator.canEvaluateEarly(conditions)) {
-                boolean shouldSkip = conditionEvaluator.shouldSkip(conditions);
+            if (conditionProcessor.allMatch(conditions, Condition.EvaluationPhase.CONFIGURATION)) {
+                boolean shouldSkip = conditionProcessor.shouldSkip(conditions);
                 if (shouldSkip) {
                     logger.info("Skipping registration of class {} as the conditions are not met", definition.getClazz().getSimpleName());
                 } else {
@@ -89,8 +85,8 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
 
         delayedRegistrations.forEach(definition -> {
             logger.debug("Starting delayed registration for class {}", definition.getClazz());
-            List<? extends Condition> conditions = conditionFactory.create(definition.getMetadata());
-            boolean shouldSkip = conditionEvaluator.shouldSkip(conditions);
+            List<? extends Condition> conditions = conditionProcessor.create(definition.getMetadata());
+            boolean shouldSkip = conditionProcessor.shouldSkip(conditions);
             if (shouldSkip) {
                 logger.info("Skipping registration of class {} as the conditions are not met", definition.getClazz().getSimpleName());
             } else {
@@ -113,7 +109,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
                     registry.register(provider, definition);
                 });
 
-        registry.instances(new TypeReference<MetadataConditionFactory<Condition>>() {}).forEach(conditionFactory::register);
+        registry.instances(new TypeReference<MetadataConditionFactory<Condition>>() {}).forEach(conditionProcessor::addFactory);
     }
 
     private void registerModules() {

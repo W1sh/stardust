@@ -6,25 +6,25 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ActiveProfileConditionFactoryTest {
+class SystemPropertyConditionRegistryTest {
 
-    private ActiveProfileConditionFactory factory;
+    private SystemPropertyConditionFactory factory;
 
     @BeforeEach
     void setUp() {
-        factory = new ActiveProfileConditionFactory();
+        factory = new SystemPropertyConditionFactory();
     }
 
     @Test
-    void should_returnActiveProfileCondition_whenGivenOptionsWithActiveProfiles() {
+    void should_returnSystemPropertyCondition_whenGivenOptionsWithRequiredSystemProperties() {
         final var options = Metadata.builder()
-                .profiles("test")
+                .requiredSystemProperty("test", "test")
                 .build();
 
         var condition = factory.create(options);
 
         assertNotNull(condition);
-        assertEquals(ActiveProfileCondition.class, condition.getClass());
+        assertEquals(SystemPropertyCondition.class, condition.getClass());
     }
 
     @Test

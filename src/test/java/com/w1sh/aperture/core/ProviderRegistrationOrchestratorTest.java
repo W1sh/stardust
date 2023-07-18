@@ -1,12 +1,9 @@
 package com.w1sh.aperture.core;
 
-import com.w1sh.aperture.core.condition.ProviderConditionEvaluator;
-import com.w1sh.aperture.core.condition.ProviderConditionFactory;
+import com.w1sh.aperture.core.condition.DefaultConditionProcessor;
 import com.w1sh.aperture.example.service.impl.DuplicateCalculatorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashSet;
 
 import static org.mockito.Mockito.*;
 
@@ -20,9 +17,8 @@ class ProviderRegistrationOrchestratorTest {
     void setUp() {
         registry = spy(new DefaultProviderRegistry());
         factory = spy(new DefaultProviderFactory(registry));
-        ProviderConditionFactory conditionFactory = new ProviderConditionFactory();
-        ProviderConditionEvaluator conditionEvaluator = new ProviderConditionEvaluator(registry, Environment.empty());
-        orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionFactory, conditionEvaluator);
+        DefaultConditionProcessor conditionProcessor = new DefaultConditionProcessor(registry, Environment.empty());
+        orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionProcessor);
     }
 
     @Test

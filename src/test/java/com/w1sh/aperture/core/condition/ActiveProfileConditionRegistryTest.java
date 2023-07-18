@@ -1,31 +1,30 @@
 package com.w1sh.aperture.core.condition;
 
 import com.w1sh.aperture.core.Metadata;
-import com.w1sh.aperture.example.service.CalculatorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RequiredClassConditionFactoryTest {
+class ActiveProfileConditionRegistryTest {
 
-    private RequiredClassConditionFactory factory;
+    private ActiveProfileConditionFactory factory;
 
     @BeforeEach
     void setUp() {
-        factory = new RequiredClassConditionFactory();
+        factory = new ActiveProfileConditionFactory();
     }
 
     @Test
-    void should_returnRequiredClassCondition_whenGivenOptionsWithRequiredClass() {
+    void should_returnActiveProfileCondition_whenGivenOptionsWithActiveProfiles() {
         final var options = Metadata.builder()
-                .conditionalOn(CalculatorService.class)
+                .profiles("test")
                 .build();
 
         var condition = factory.create(options);
 
         assertNotNull(condition);
-        assertEquals(RequiresClassCondition.class, condition.getClass());
+        assertEquals(ActiveProfileCondition.class, condition.getClass());
     }
 
     @Test

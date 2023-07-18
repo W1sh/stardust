@@ -28,7 +28,7 @@ class ProviderPriorityComparatorTest {
     }
 
     @Test
-    void should_returnProvider_whenGivenValidConstructorInitializationContext() {
+    void should_orderList_whenListWithClassesAnnotatedWithPriority() {
         ProviderPriorityComparator.sort(list);
 
         assertNotNull(list);

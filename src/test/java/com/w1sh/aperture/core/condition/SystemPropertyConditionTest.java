@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class SystemPropertyConditionTest {
 
-    private ProviderConditionEvaluator evaluator;
+    private DefaultConditionProcessor evaluator;
 
     @BeforeEach
     void setUp() {
         DefaultProviderRegistry registry = new DefaultProviderRegistry();
-        evaluator = new ProviderConditionEvaluator(registry, Environment.builder().build());
+        evaluator = new DefaultConditionProcessor(registry, Environment.builder().build());
     }
 
     @Test

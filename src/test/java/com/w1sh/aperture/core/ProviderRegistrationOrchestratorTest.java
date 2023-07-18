@@ -21,7 +21,7 @@ class ProviderRegistrationOrchestratorTest {
         registry = spy(new DefaultProviderRegistry());
         factory = spy(new DefaultProviderFactory(registry));
         ProviderConditionFactory conditionFactory = new ProviderConditionFactory();
-        ProviderConditionEvaluator conditionEvaluator = new ProviderConditionEvaluator(registry, new Environment(new HashSet<>()));
+        ProviderConditionEvaluator conditionEvaluator = new ProviderConditionEvaluator(registry, Environment.empty());
         orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionFactory, conditionEvaluator);
     }
 

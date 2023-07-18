@@ -20,7 +20,9 @@ class ProviderConditionEvaluatorTest {
     @BeforeEach
     void setUp() {
         DefaultProviderRegistry registry = spy(new DefaultProviderRegistry());
-        Environment environment = new Environment(Set.of("test"));
+        Environment environment = Environment.builder()
+                .profiles("test")
+                .build();
         evaluator = new ProviderConditionEvaluator(registry, environment);
     }
 

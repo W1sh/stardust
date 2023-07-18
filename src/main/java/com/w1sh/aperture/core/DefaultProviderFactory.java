@@ -22,7 +22,7 @@ public class DefaultProviderFactory implements ProviderFactory {
 
     public DefaultProviderFactory(ProviderRegistry registry) {
         this.registry = registry;
-        this.postConstructorProcessor = new DefaultPostConstructorProcessor();
+        this.postConstructorProcessor = new JakartaPostConstructProcessor();
     }
 
     @Override

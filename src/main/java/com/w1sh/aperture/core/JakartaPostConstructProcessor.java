@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.LinkedList;
 
-public class DefaultPostConstructorProcessor implements PostConstructorProcessor{
+public class JakartaPostConstructProcessor implements PostConstructorProcessor {
 
     @Override
     public void process(Object instance) {

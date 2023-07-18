@@ -5,19 +5,30 @@ import com.w1sh.aperture.core.annotation.Profile;
 import com.w1sh.aperture.core.annotation.Provide;
 
 import javax.annotation.Priority;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 
 public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory {
 
     @Override
     public Metadata create(Class<?> clazz) {
-        Provide provideAnnotation = clazz.getAnnotation(Provide.class);
+        return fromAnnotatedElement(clazz);
+    }
+
+    @Override
+    public Metadata create(Method method) {
+        return fromAnnotatedElement(method);
+    }
+
+    private static Metadata fromAnnotatedElement(AnnotatedElement annotatedElement) {
+        Provide provideAnnotation = annotatedElement.getAnnotation(Provide.class);
         var name = (provideAnnotation != null && !provideAnnotation.value().isBlank()) ? provideAnnotation.value() : null;
         var scope = provideAnnotation != null ? provideAnnotation.scope() : Scope.SINGLETON;
-        Priority priorityAnnotation = clazz.getAnnotation(Priority.class);
+        Priority priorityAnnotation = annotatedElement.getAnnotation(Priority.class);
         var priority = priorityAnnotation != null ? priorityAnnotation.value() : null;
-        Profile profileAnnotation = clazz.getAnnotation(Profile.class);
+        Profile profileAnnotation = annotatedElement.getAnnotation(Profile.class);
         var profiles = profileAnnotation != null ? profileAnnotation.value() : null;
-        var primary = clazz.getAnnotation(Primary.class) != null;
+        var primary = annotatedElement.getAnnotation(Primary.class) != null;
 
         return Metadata.builder()
                 .name(name)
@@ -29,17 +40,16 @@ public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory {
     }
 
     @Override
-    public Metadata merge(Class<?> clazz, Metadata metadata) {
-        Metadata classMetadata = create(clazz);
+    public Metadata merge(Metadata m1, Metadata m2) {
         return Metadata.builder()
-                .name(mergeValue(classMetadata.name(), metadata.name()))
-                .primary(mergeValue(classMetadata.primary(), metadata.primary()))
-                .scope(mergeValue(classMetadata.scope(), metadata.scope()))
-                .priority(mergeValue(classMetadata.priority(), metadata.priority()))
-                .profiles(mergeValue(classMetadata.profiles(), metadata.profiles()))
-                .conditionalOn(mergeValue(classMetadata.requiredClasses(), metadata.requiredClasses()))
-                .conditionalOnMissing(mergeValue(classMetadata.requiredMissingClasses(), metadata.requiredMissingClasses()))
-                .requiredSystemProperties(mergeValue(classMetadata.requiredSystemProperties(), metadata.requiredSystemProperties()))
+                .name(mergeValue(m1.name(), m2.name()))
+                .primary(mergeValue(m1.primary(), m2.primary()))
+                .scope(mergeValue(m1.scope(), m2.scope()))
+                .priority(mergeValue(m1.priority(), m2.priority()))
+                .profiles(mergeValue(m1.profiles(), m2.profiles()))
+                .conditionalOn(mergeValue(m1.requiredClasses(), m2.requiredClasses()))
+                .conditionalOnMissing(mergeValue(m1.requiredMissingClasses(), m2.requiredMissingClasses()))
+                .requiredSystemProperties(mergeValue(m1.requiredSystemProperties(), m2.requiredSystemProperties()))
                 .build();
     }
 }

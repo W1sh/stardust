@@ -1,5 +1,6 @@
 package com.w1sh.aperture.core;
 
+import com.w1sh.aperture.core.annotation.Provide;
 import com.w1sh.aperture.core.exception.ModuleProcessingException;
 import com.w1sh.aperture.core.exception.ProviderInitializationException;
 
@@ -10,11 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class DefaultDefinitionFactory implements AnnotationAwareDefinitionFactory, ModuleAwareDefinitionFactory {
+public class DefaultDefinitionFactory implements AnnotationAwareDefinitionFactory {
 
-    private final MetadataFactory metadataFactory;
+    private final AnnotationAwareMetadataFactory metadataFactory;
+    private final ProviderRegistry registry;
 
-    public DefaultDefinitionFactory() {
+    public DefaultDefinitionFactory(ProviderRegistry registry) {
+        this.registry = registry;
         this.metadataFactory = new DefaultMetadataFactory();
     }
 
@@ -26,11 +29,21 @@ public class DefaultDefinitionFactory implements AnnotationAwareDefinitionFactor
     }
 
     @Override
-    public <T> List<Definition<T>> fromModule(Class<?> module) {
-        if (List.of(module.getInterfaces()).contains(Module.class)) {
+    public List<Definition<?>> fromModuleClass(Class<?> module) {
+        if (!List.of(module.getInterfaces()).contains(Module.class)) {
             throw new ModuleProcessingException("Tried to create definitions from class but it is not a Module");
         }
-        return new ArrayList<>();
+        var definitions = new ArrayList<Definition<?>>();
+        for (Method declaredMethod : module.getDeclaredMethods()) {
+            if (declaredMethod.isAnnotationPresent(Provide.class)) {
+                Metadata metadata = metadataFactory.create(declaredMethod);
+                Object instance = registry.instance(module);
+                ModuleMethodDefinition<?> methodDefinition = ModuleMethodDefinition.withMetadata(
+                        declaredMethod.getReturnType(), metadata, createSupplier(declaredMethod, instance));
+                definitions.add(methodDefinition);
+            }
+        }
+        return definitions;
     }
 
     @SuppressWarnings("unchecked")

@@ -25,14 +25,14 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
 
     private final DefaultProviderFactory factory;
     private final ProviderRegistry registry;
-    private final ModuleAwareDefinitionFactory definitionFactory;
+    private final AnnotationAwareDefinitionFactory definitionFactory;
     private final ProviderConditionFactory conditionFactory;
     private final ProviderConditionEvaluator conditionEvaluator;
 
     public ProviderRegistrationOrchestrator(DefaultProviderRegistry registry, DefaultProviderFactory factory, Environment environment) {
         this.factory = factory;
         this.registry = registry;
-        this.definitionFactory = new DefaultDefinitionFactory();
+        this.definitionFactory = new DefaultDefinitionFactory(registry);
         this.conditionFactory = new ProviderConditionFactory();
         this.conditionEvaluator = new ProviderConditionEvaluator(registry, environment);
     }
@@ -41,7 +41,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
                                             ProviderConditionFactory conditionFactory, ProviderConditionEvaluator conditionEvaluator) {
         this.factory = factory;
         this.registry = registry;
-        this.definitionFactory = new DefaultDefinitionFactory();
+        this.definitionFactory = new DefaultDefinitionFactory(registry);
         this.conditionFactory = conditionFactory;
         this.conditionEvaluator = conditionEvaluator;
     }
@@ -121,7 +121,7 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
         List<Class<?>> modules = ModuleInspector.findAllInternalSubclassesOf(Module.class);
         logger.debug("Found {} modules to be registered", modules.size());
         modules.stream()
-                .map(definitionFactory::fromModule)
+                .map(definitionFactory::fromModuleClass)
                 .flatMap(Collection::stream)
                 .forEach(definition -> {
                     ObjectProvider<?> provider = factory.newProvider(definition);

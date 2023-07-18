@@ -1,6 +1,8 @@
 package com.w1sh.aperture.core;
 
 import com.w1sh.aperture.core.exception.PostConstructInvocationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
@@ -9,6 +11,8 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 public class JakartaPostConstructProcessor implements PostConstructorProcessor {
+
+    private static final Logger logger = LoggerFactory.getLogger(JakartaPostConstructProcessor.class);
 
     @Override
     public void process(Object instance) {
@@ -20,7 +24,7 @@ public class JakartaPostConstructProcessor implements PostConstructorProcessor {
                 }
             }
         }
-
+        logger.debug("Found {} post construct methods to invoke on class {}", postConstructMethods.size(), instance.getClass());
         for (Method m : postConstructMethods) {
             try {
                 m.invoke(instance);

@@ -1,10 +1,9 @@
 package com.w1sh.aperture.util;
 
-import com.w1sh.aperture.core.ClassDefinition;
-import com.w1sh.aperture.core.Metadata;
-import com.w1sh.aperture.core.DefaultProviderFactory;
-import com.w1sh.aperture.core.DefaultProviderRegistry;
-import com.w1sh.aperture.core.util.Constructors;
+import com.w1sh.aperture.ClassDefinition;
+import com.w1sh.aperture.Metadata;
+import com.w1sh.aperture.DefaultProviderFactory;
+import com.w1sh.aperture.DefaultProviderRegistry;
 
 public class Tests {
 

@@ -1,6 +1,6 @@
 package com.w1sh.aperture.example.controller.impl;
 
-import com.w1sh.aperture.core.annotation.Primary;
+import com.w1sh.aperture.annotation.Primary;
 import com.w1sh.aperture.example.controller.CalculatorController;
 
 @Primary

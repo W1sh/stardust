@@ -41,6 +41,8 @@ public class DefaultMetadataFactory implements AnnotationAwareMetadataFactory {
 
     @Override
     public Metadata merge(Metadata m1, Metadata m2) {
+        if (m1.equals(Metadata.empty())) return m2;
+        if (m2.equals(Metadata.empty())) return m1;
         return Metadata.builder()
                 .name(mergeValue(m1.name(), m2.name()))
                 .primary(mergeValue(m1.primary(), m2.primary()))

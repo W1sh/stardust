@@ -9,14 +9,17 @@ import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.service.CalculatorService;
 import com.w1sh.aperture.example.service.impl.CalculatorServiceImpl;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import javax.annotation.Priority;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class DefaultMetadataFactoryTest {
 
-    private final DefaultMetadataFactory metadataFactory = new DefaultMetadataFactory();
+    private final DefaultMetadataFactory metadataFactory = spy(new DefaultMetadataFactory());
 
     @Test
     void should_returnMetadata_whenProvidedClassHasMetadataAnnotations() {
@@ -86,6 +89,14 @@ class DefaultMetadataFactoryTest {
         assertEquals(Scope.SINGLETON, metadata.scope());
         assertNull(metadata.profiles());
         assertFalse(metadata.primary());
+    }
+
+    @Test
+    void should_returnEmptyMetadata_whenTwoEmptyMetadatasAreMerged() {
+        Metadata mergedMetadata = metadataFactory.merge(Metadata.empty(), Metadata.empty());
+
+        assertNotNull(mergedMetadata);
+        verify(metadataFactory, times(0)).mergeValue(any(), any());
     }
 
     @Primary

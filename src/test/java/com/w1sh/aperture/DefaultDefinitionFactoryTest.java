@@ -18,12 +18,12 @@ import static org.mockito.Mockito.*;
 
 class DefaultDefinitionFactoryTest {
 
-    private ProviderRegistry registry;
+    private ProviderContainer registry;
     private AnnotationAwareDefinitionFactory definitionFactory;
 
     @BeforeEach
     void setUp() {
-        registry = spy(new DefaultProviderRegistry());
+        registry = spy(new ProviderContainerImpl());
         definitionFactory = new DefaultDefinitionFactory(registry);
     }
 

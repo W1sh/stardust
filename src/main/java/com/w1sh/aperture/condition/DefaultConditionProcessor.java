@@ -1,6 +1,6 @@
 package com.w1sh.aperture.condition;
 
-import com.w1sh.aperture.DefaultProviderRegistry;
+import com.w1sh.aperture.ProviderContainerImpl;
 import com.w1sh.aperture.Environment;
 import com.w1sh.aperture.Metadata;
 import com.w1sh.aperture.util.Types;
@@ -16,7 +16,7 @@ public class DefaultConditionProcessor implements ConditionEvaluator, ConditionR
     private final Set<MetadataConditionFactory<?>> metadataConditionFactories = HashSet.newHashSet(64);
     private final ConditionContext context;
 
-    public DefaultConditionProcessor(DefaultProviderRegistry registry, Environment environment) {
+    public DefaultConditionProcessor(ProviderContainerImpl registry, Environment environment) {
         this.context = new ConditionContext(registry, environment);
     }
 

@@ -15,7 +15,7 @@ class PhaseEventListenerTest {
 
     @BeforeEach
     void setUp() {
-        DefaultProviderRegistry registry = spy(new DefaultProviderRegistry());
+        ProviderContainerImpl registry = spy(new ProviderContainerImpl());
         DefaultProviderFactory factory = spy(new DefaultProviderFactory(registry));
         DefaultConditionProcessor conditionProcessor = new DefaultConditionProcessor(registry, Environment.empty());
         orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionProcessor);

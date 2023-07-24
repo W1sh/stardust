@@ -1,6 +1,6 @@
 package com.w1sh.aperture.condition;
 
-import com.w1sh.aperture.DefaultProviderRegistry;
+import com.w1sh.aperture.ProviderContainerImpl;
 import com.w1sh.aperture.Environment;
 import com.w1sh.aperture.Metadata;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +16,7 @@ class SystemPropertyConditionTest {
 
     @BeforeEach
     void setUp() {
-        DefaultProviderRegistry registry = new DefaultProviderRegistry();
+        ProviderContainerImpl registry = new ProviderContainerImpl();
         evaluator = new DefaultConditionProcessor(registry, Environment.builder().build());
     }
 

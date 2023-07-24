@@ -17,10 +17,10 @@ public class DefaultProviderFactory implements ProviderFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProviderFactory.class);
 
-    private final ProviderRegistry registry;
+    private final ProviderContainer registry;
     private final PostConstructorProcessor postConstructorProcessor;
 
-    public DefaultProviderFactory(ProviderRegistry registry) {
+    public DefaultProviderFactory(ProviderContainer registry) {
         this.registry = registry;
         this.postConstructorProcessor = new JakartaPostConstructProcessor();
     }

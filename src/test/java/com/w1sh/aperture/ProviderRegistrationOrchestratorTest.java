@@ -11,11 +11,11 @@ class ProviderRegistrationOrchestratorTest {
 
     private ProviderRegistrationOrchestrator orchestrator;
     private DefaultProviderFactory factory;
-    private DefaultProviderRegistry registry;
+    private ProviderContainerImpl registry;
 
     @BeforeEach
     void setUp() {
-        registry = spy(new DefaultProviderRegistry());
+        registry = spy(new ProviderContainerImpl());
         factory = spy(new DefaultProviderFactory(registry));
         DefaultConditionProcessor conditionProcessor = new DefaultConditionProcessor(registry, Environment.empty());
         orchestrator = new ProviderRegistrationOrchestrator(factory, registry, conditionProcessor);

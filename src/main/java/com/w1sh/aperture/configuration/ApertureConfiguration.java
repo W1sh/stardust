@@ -3,7 +3,7 @@ package com.w1sh.aperture.configuration;
 import com.w1sh.aperture.ApertureApplication;
 import com.w1sh.aperture.PostConstructorProcessor;
 import com.w1sh.aperture.PreDestructionProcessor;
-import com.w1sh.aperture.ProviderRegistry;
+import com.w1sh.aperture.ProviderContainer;
 import com.w1sh.aperture.naming.NamingStrategy;
 
 import java.util.ArrayList;
@@ -13,20 +13,20 @@ public class ApertureConfiguration {
 
     private final List<PostConstructorProcessor> constructorProcessors;
     private final List<PreDestructionProcessor> destructionProcessors;
-    private ProviderRegistry registry;
+    private ProviderContainer registry;
     private NamingStrategy namingStrategy;
-    private ProviderRegistry.OverrideStrategy overrideStrategy;
+    private ProviderContainer.OverrideStrategy overrideStrategy;
 
     public ApertureConfiguration() {
         this.constructorProcessors = new ArrayList<>(16);
         this.destructionProcessors = new ArrayList<>(16);
     }
 
-    public ApertureConfiguration withRegistry(ProviderRegistry registry) {
+    public ApertureConfiguration withRegistry(ProviderContainer registry) {
         return withRegistryIf(true, registry);
     }
 
-    public ApertureConfiguration withRegistryIf(boolean predicate, ProviderRegistry registry) {
+    public ApertureConfiguration withRegistryIf(boolean predicate, ProviderContainer registry) {
         if (predicate) {
             this.registry = registry;
         }
@@ -72,7 +72,7 @@ public class ApertureConfiguration {
 
     public ApertureConfiguration allowProviderOverridingIf(boolean predicate, boolean value) {
         if (predicate) {
-            this.overrideStrategy = value ? ProviderRegistry.OverrideStrategy.ALLOWED : ProviderRegistry.OverrideStrategy.NOT_ALLOWED;
+            this.overrideStrategy = value ? ProviderContainer.OverrideStrategy.ALLOWED : ProviderContainer.OverrideStrategy.NOT_ALLOWED;
         }
         return this;
     }

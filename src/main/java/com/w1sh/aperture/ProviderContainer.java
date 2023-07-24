@@ -2,9 +2,7 @@ package com.w1sh.aperture;
 
 import java.util.List;
 
-public interface ProviderRegistry {
-
-    String DEFAULT_REGISTRY_NAME = "providerRegistry";
+public interface ProviderContainer {
 
     void register(ObjectProvider<?> provider, Class<?> clazz, String name);
 

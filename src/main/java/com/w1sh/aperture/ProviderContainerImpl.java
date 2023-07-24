@@ -12,11 +12,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultProviderRegistry implements ProviderRegistry {
+public class ProviderContainerImpl implements ProviderContainer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultProviderRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProviderContainerImpl.class);
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
     private final Map<Class<?>, Metadata> metadatas = new ConcurrentHashMap<>(256);
@@ -25,13 +26,13 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
     private OverrideStrategy overrideStrategy = OverrideStrategy.ALLOWED;
 
-    public DefaultProviderRegistry() {
+    public ProviderContainerImpl() {
         this(new DefaultNamingStrategy());
     }
 
-    public DefaultProviderRegistry(NamingStrategy namingStrategy) {
+    public ProviderContainerImpl(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
-        this.register(new SingletonObjectProvider<>(this), DefaultProviderRegistry.class, DEFAULT_REGISTRY_NAME);
+        this.register(new SingletonObjectProvider<>(this), ProviderContainerImpl.class, namingStrategy.generate(this.getClass()));
     }
 
     @Override
@@ -59,6 +60,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T instance(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         ObjectProvider<?> provider = get(clazz);
         return provider != null ? (T) provider.singletonInstance() : null;
     }
@@ -66,18 +68,21 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T instance(String name) {
+        Objects.requireNonNull(name);
         ObjectProvider<?> provider = named.get(name);
         return provider != null ? (T) provider.singletonInstance() : null;
     }
 
     @Override
     public <T> T primaryInstance(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         return primaryProvider(clazz).singletonInstance();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> primaryProvider(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         List<? extends ObjectProvider<?>> primaries = providers.entrySet().stream()
                 .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
                 .filter(entry -> isPrimary(metadatas.get(entry.getKey())))
@@ -97,6 +102,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> instances(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         return (List<T>) candidates(clazz).stream()
                 .map(ObjectProvider::singletonInstance)
                 .toList();
@@ -105,6 +111,7 @@ public class DefaultProviderRegistry implements ProviderRegistry {
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> instances(TypeReference<T> typeReference) {
+        Objects.requireNonNull(typeReference);
         return (List<T>) providers.entrySet().stream()
                 .filter(entry -> typeReference.getRawType().isAssignableFrom(entry.getKey()))
                 .filter(entry -> ((Class<?>)((ParameterizedType) typeReference.getType()).getActualTypeArguments()[0])
@@ -115,29 +122,32 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
     @Override
     public <T> ObjectProvider<T> provider(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         return get(clazz);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> provider(String name) {
+        Objects.requireNonNull(name);
         return (ObjectProvider<T>) named.get(name);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<ObjectProvider<T>> providers(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         return (List<ObjectProvider<T>>) candidates(clazz);
     }
 
     @Override
     public <T> boolean contains(Class<T> clazz) {
-        return !candidates(clazz).isEmpty();
+        return clazz != null && !candidates(clazz).isEmpty();
     }
 
     @Override
     public boolean contains(String name) {
-        return provider(name) != null;
+        return name != null && provider(name) != null;
     }
 
     @Override
@@ -147,10 +157,12 @@ public class DefaultProviderRegistry implements ProviderRegistry {
 
     @Override
     public void setOverrideStrategy(OverrideStrategy strategy) {
+        Objects.requireNonNull(strategy);
         this.overrideStrategy = strategy;
     }
 
     public List<Class<?>> getAllAnnotatedWith(Class<? extends Annotation> annotationType) {
+        Objects.requireNonNull(annotationType);
         return providers.keySet().stream()
                 .filter(clazz -> clazz.isAnnotationPresent(annotationType))
                 .toList();

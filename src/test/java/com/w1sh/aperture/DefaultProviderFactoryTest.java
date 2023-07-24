@@ -18,11 +18,11 @@ import static org.mockito.Mockito.*;
 class DefaultProviderFactoryTest {
 
     private DefaultProviderFactory factory;
-    private DefaultProviderRegistry registry;
+    private ProviderContainerImpl registry;
 
     @BeforeEach
     void setUp() {
-        registry = spy(new DefaultProviderRegistry());
+        registry = spy(new ProviderContainerImpl());
         factory = new DefaultProviderFactory(registry);
     }
 

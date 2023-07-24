@@ -17,13 +17,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DefaultProviderRegistryTest {
+class ProviderContainerImplTest {
 
-    private DefaultProviderRegistry registry;
+    private ProviderContainerImpl registry;
 
     @BeforeEach
     void setUp() {
-        registry = new DefaultProviderRegistry();
+        registry = new ProviderContainerImpl();
     }
 
     @Test
@@ -97,7 +97,7 @@ class DefaultProviderRegistryTest {
     void should_throwRegistrationException_whenTryingToRegisterClassTwiceButOverrideNotAllowed() {
         final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
         final var provider2 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        registry.setOverrideStrategy(ProviderRegistry.OverrideStrategy.NOT_ALLOWED);
+        registry.setOverrideStrategy(ProviderContainer.OverrideStrategy.NOT_ALLOWED);
         registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
 
         assertThrows(ProviderRegistrationException.class, () ->
@@ -108,10 +108,10 @@ class DefaultProviderRegistryTest {
     void should_throwRegistrationException_whenTryingToRegisterWithSameNameTwiceButOverrideNotAllowed() {
         final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
         final var provider2 = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.setOverrideStrategy(ProviderRegistry.OverrideStrategy.NOT_ALLOWED);
+        registry.setOverrideStrategy(ProviderContainer.OverrideStrategy.NOT_ALLOWED);
         registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
 
-        assertEquals(ProviderRegistry.OverrideStrategy.NOT_ALLOWED, registry.getOverrideStrategy());
+        assertEquals(ProviderContainer.OverrideStrategy.NOT_ALLOWED, registry.getOverrideStrategy());
         assertThrows(ProviderRegistrationException.class, () ->
                 registry.register(provider2, DuplicateCalculatorServiceImpl.class, "CalculatorControllerImpl"));
     }
@@ -210,5 +210,74 @@ class DefaultProviderRegistryTest {
         assertEquals(1, instances1.size());
         assertNotNull(instances2);
         assertEquals(2, instances2.size());
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveInstanceWithNullClass() {
+        assertThrows(NullPointerException.class, () -> registry.instance((Class<Object>) null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveInstanceWithNullName() {
+        assertThrows(NullPointerException.class, () -> registry.instance((String) null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveProviderWithNullClass() {
+        assertThrows(NullPointerException.class, () -> registry.instance((Class<Object>) null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveProviderWithNullName() {
+        assertThrows(NullPointerException.class, () -> registry.instance((String) null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrievePrimaryInstanceWithNullClass() {
+        assertThrows(NullPointerException.class, () -> registry.primaryInstance(null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrievePrimaryProviderWithNullClass() {
+        assertThrows(NullPointerException.class, () -> registry.primaryInstance(null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToSetNullOverrideStrategy() {
+        assertThrows(NullPointerException.class, () -> registry.setOverrideStrategy(null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveProvidersWithNullClass() {
+        assertThrows(NullPointerException.class, () -> registry.providers(null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveInstancesWithNullClass() {
+        assertThrows(NullPointerException.class, () -> registry.instances((Class<Object>) null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveInstancesWithNullTypeReference() {
+        assertThrows(NullPointerException.class, () -> registry.instances((TypeReference<?>) null));
+    }
+
+    @Test
+    void should_throwNullPointerException_whenTryingToRetrieveListOfClassesAnnotatedWithNullAnnotation() {
+        assertThrows(NullPointerException.class, () -> registry.getAllAnnotatedWith(null));
+    }
+
+    @Test
+    void should_returnFalse_whenSearchingContainerForNullClass() {
+        boolean contains = registry.contains((Class<Object>) null);
+
+        assertFalse(contains);
+    }
+
+    @Test
+    void should_returnFalse_whenSearchingContainerForNullName() {
+        boolean contains = registry.contains((String) null);
+
+        assertFalse(contains);
     }
 }

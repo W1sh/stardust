@@ -23,18 +23,18 @@ public class ProviderRegistrationOrchestrator implements PhaseEventMulticaster {
     private final List<PhaseEventListener> listeners = new ArrayList<>(64);
 
     private final DefaultProviderFactory factory;
-    private final ProviderRegistry registry;
+    private final ProviderContainer registry;
     private final AnnotationAwareDefinitionFactory definitionFactory;
     private final DefaultConditionProcessor conditionProcessor;
 
-    public ProviderRegistrationOrchestrator(DefaultProviderRegistry registry, DefaultProviderFactory factory, Environment environment) {
+    public ProviderRegistrationOrchestrator(ProviderContainerImpl registry, DefaultProviderFactory factory, Environment environment) {
         this.factory = factory;
         this.registry = registry;
         this.definitionFactory = new DefaultDefinitionFactory(registry);
         this.conditionProcessor = new DefaultConditionProcessor(registry, environment);
     }
 
-    public ProviderRegistrationOrchestrator(DefaultProviderFactory factory, DefaultProviderRegistry registry,
+    public ProviderRegistrationOrchestrator(DefaultProviderFactory factory, ProviderContainerImpl registry,
                                             DefaultConditionProcessor conditionProcessor) {
         this.factory = factory;
         this.registry = registry;

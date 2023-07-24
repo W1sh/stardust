@@ -3,11 +3,11 @@ package com.w1sh.aperture.util;
 import com.w1sh.aperture.ClassDefinition;
 import com.w1sh.aperture.Metadata;
 import com.w1sh.aperture.DefaultProviderFactory;
-import com.w1sh.aperture.DefaultProviderRegistry;
+import com.w1sh.aperture.ProviderContainerImpl;
 
 public class Tests {
 
-    public static <T> void register(DefaultProviderRegistry registry, Class<T> clazz) {
+    public static <T> void register(ProviderContainerImpl registry, Class<T> clazz) {
         var factory = new DefaultProviderFactory(registry);
         var provider = factory.newProvider(definition(clazz));
         registry.register(provider, clazz, clazz.getSimpleName());

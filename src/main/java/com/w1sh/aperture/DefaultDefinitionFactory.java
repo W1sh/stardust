@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 public class DefaultDefinitionFactory implements AnnotationAwareDefinitionFactory {
 
     private final MetadataFactory metadataFactory;
-    private final ProviderRegistry registry;
+    private final ProviderContainer registry;
 
-    public DefaultDefinitionFactory(ProviderRegistry registry) {
+    public DefaultDefinitionFactory(ProviderContainer registry) {
         this.registry = registry;
         this.metadataFactory = new AnnotationAwareMetadataFactory();
     }

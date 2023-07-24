@@ -13,12 +13,12 @@ import java.util.function.Supplier;
 
 public class DefaultDefinitionFactory implements AnnotationAwareDefinitionFactory {
 
-    private final AnnotationAwareMetadataFactory metadataFactory;
+    private final MetadataFactory metadataFactory;
     private final ProviderRegistry registry;
 
     public DefaultDefinitionFactory(ProviderRegistry registry) {
         this.registry = registry;
-        this.metadataFactory = new DefaultMetadataFactory();
+        this.metadataFactory = new AnnotationAwareMetadataFactory();
     }
 
     @Override

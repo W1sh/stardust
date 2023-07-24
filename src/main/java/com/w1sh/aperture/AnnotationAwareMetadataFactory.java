@@ -1,23 +1,41 @@
 package com.w1sh.aperture;
 
-import com.w1sh.aperture.exception.MetadataProcessingException;
+import com.w1sh.aperture.annotation.Primary;
+import com.w1sh.aperture.annotation.Profile;
+import com.w1sh.aperture.annotation.Provide;
 
+import javax.annotation.Priority;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 
-public interface AnnotationAwareMetadataFactory {
+public class AnnotationAwareMetadataFactory implements MetadataFactory {
 
-    Metadata create(Method method);
+    @Override
+    public Metadata create(Class<?> clazz) {
+        return fromAnnotatedElement(clazz);
+    }
 
-    Metadata create(Class<?> clazz);
+    @Override
+    public Metadata create(Method method) {
+        return fromAnnotatedElement(method);
+    }
 
-    Metadata merge(Metadata m1, Metadata m2);
+    private static Metadata fromAnnotatedElement(AnnotatedElement annotatedElement) {
+        Provide provideAnnotation = annotatedElement.getAnnotation(Provide.class);
+        var name = (provideAnnotation != null && !provideAnnotation.value().isBlank()) ? provideAnnotation.value() : null;
+        var scope = provideAnnotation != null ? provideAnnotation.scope() : Scope.SINGLETON;
+        Priority priorityAnnotation = annotatedElement.getAnnotation(Priority.class);
+        var priority = priorityAnnotation != null ? priorityAnnotation.value() : null;
+        Profile profileAnnotation = annotatedElement.getAnnotation(Profile.class);
+        var profiles = profileAnnotation != null ? profileAnnotation.value() : null;
+        var primary = annotatedElement.getAnnotation(Primary.class) != null;
 
-    default <T> T mergeValue(T o1, T o2) throws MetadataProcessingException {
-        if (o1 != null && o2 != null) {
-            if (o1.equals(o2)) {
-                return o1;
-            } else throw new MetadataProcessingException("Failed to merge metadata as both have different values");
-        }
-        return o1 != null ? o1 : o2;
+        return Metadata.builder()
+                .name(name)
+                .primary(primary)
+                .scope(scope)
+                .profiles(profiles)
+                .priority(priority)
+                .build();
     }
 }

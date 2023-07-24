@@ -1,8 +1,5 @@
 package com.w1sh.aperture;
 
-import com.w1sh.aperture.annotation.Property;
-import com.w1sh.aperture.annotation.Required;
-
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.Objects;

@@ -9,17 +9,15 @@ import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.service.CalculatorService;
 import com.w1sh.aperture.example.service.impl.CalculatorServiceImpl;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 import javax.annotation.Priority;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class DefaultMetadataFactoryTest {
+class AnnotationAwareMetadataFactoryTest {
 
-    private final DefaultMetadataFactory metadataFactory = spy(new DefaultMetadataFactory());
+    private final AnnotationAwareMetadataFactory metadataFactory = spy(new AnnotationAwareMetadataFactory());
 
     @Test
     void should_returnMetadata_whenProvidedClassHasMetadataAnnotations() {
@@ -36,7 +34,7 @@ class DefaultMetadataFactoryTest {
 
     @Test
     void should_returnEmptySingletonMetadata_whenProvidedClassHasNoMetadataAnnotations() {
-        Metadata metadata = metadataFactory.create(DefaultMetadataFactoryTest.class);
+        Metadata metadata = metadataFactory.create(AnnotationAwareMetadataFactoryTest.class);
 
         assertNotNull(metadata);
         assertNull(metadata.name());

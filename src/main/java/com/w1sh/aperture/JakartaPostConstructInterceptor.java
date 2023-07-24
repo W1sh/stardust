@@ -10,12 +10,12 @@ import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.LinkedList;
 
-public class JakartaPostConstructProcessor implements PostConstructorProcessor {
+public class JakartaPostConstructInterceptor implements InvocationInterceptor {
 
-    private static final Logger logger = LoggerFactory.getLogger(JakartaPostConstructProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(JakartaPostConstructInterceptor.class);
 
     @Override
-    public void process(Object instance) {
+    public void intercept(Object instance) {
         final Deque<Method> postConstructMethods = new LinkedList<>();
         for (Class<?> clazz = instance.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {
             for (Method method : clazz.getDeclaredMethods()) {
@@ -32,5 +32,10 @@ public class JakartaPostConstructProcessor implements PostConstructorProcessor {
                 throw new PostConstructInvocationException(m, e);
             }
         }
+    }
+
+    @Override
+    public InvocationType getInterceptorType() {
+        return InvocationType.POST_CONSTRUCT;
     }
 }

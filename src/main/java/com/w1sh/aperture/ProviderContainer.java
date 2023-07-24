@@ -18,7 +18,7 @@ public interface ProviderContainer {
 
     <T> List<T> instances(Class<T> clazz);
 
-    <T> List<T> instances(TypeReference<T> typeReference) ;
+    <T> List<T> instances(TypeReference<T> typeReference);
 
     <T> ObjectProvider<T> provider(Class<T> clazz);
 

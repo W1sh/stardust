@@ -1,9 +1,6 @@
 package com.w1sh.aperture.configuration;
 
-import com.w1sh.aperture.ApertureApplication;
-import com.w1sh.aperture.PostConstructorProcessor;
-import com.w1sh.aperture.PreDestructionProcessor;
-import com.w1sh.aperture.ProviderContainer;
+import com.w1sh.aperture.*;
 import com.w1sh.aperture.naming.NamingStrategy;
 
 import java.util.ArrayList;
@@ -11,15 +8,13 @@ import java.util.List;
 
 public class ApertureConfiguration {
 
-    private final List<PostConstructorProcessor> constructorProcessors;
-    private final List<PreDestructionProcessor> destructionProcessors;
+    private final List<InvocationInterceptor> interceptors;
     private ProviderContainer registry;
     private NamingStrategy namingStrategy;
     private ProviderContainer.OverrideStrategy overrideStrategy;
 
     public ApertureConfiguration() {
-        this.constructorProcessors = new ArrayList<>(16);
-        this.destructionProcessors = new ArrayList<>(16);
+        this.interceptors = new ArrayList<>(16);
     }
 
     public ApertureConfiguration withRegistry(ProviderContainer registry) {
@@ -44,24 +39,13 @@ public class ApertureConfiguration {
         return this;
     }
 
-    public ApertureConfiguration withPostConstructorProcessors(PostConstructorProcessor... processors) {
-        return withPostConstructorProcessorsIf(true, processors);
+    public ApertureConfiguration withInterceptors(InvocationInterceptor... interceptors) {
+        return withInterceptorsIf(true, interceptors);
     }
 
-    public ApertureConfiguration withPostConstructorProcessorsIf(boolean predicate, PostConstructorProcessor... processors) {
+    public ApertureConfiguration withInterceptorsIf(boolean predicate, InvocationInterceptor... interceptors) {
         if (predicate) {
-            this.constructorProcessors.addAll(List.of(processors));
-        }
-        return this;
-    }
-
-    public ApertureConfiguration withPreDestructionProcessors(PreDestructionProcessor... processors) {
-        return withPreDestructionProcessorsIf(true, processors);
-    }
-
-    public ApertureConfiguration withPreDestructionProcessorsIf(boolean predicate, PreDestructionProcessor... processors) {
-        if (predicate) {
-            this.destructionProcessors.addAll(List.of(processors));
+            this.interceptors.addAll(List.of(interceptors));
         }
         return this;
     }

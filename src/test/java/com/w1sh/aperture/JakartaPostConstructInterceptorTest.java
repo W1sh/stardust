@@ -6,14 +6,14 @@ import javax.annotation.PostConstruct;
 
 import static org.mockito.Mockito.*;
 
-class JakartaPostConstructProcessorTest {
+class JakartaPostConstructInterceptorTest {
 
-    private final JakartaPostConstructProcessor processor = new JakartaPostConstructProcessor();
+    private final JakartaPostConstructInterceptor processor = new JakartaPostConstructInterceptor();
 
     @Test
     void should_returnInstance_whenProviderOfClassIsRegistered() {
         PostConstructClass spy = spy(new PostConstructClass());
-        processor.process(spy);
+        processor.intercept(spy);
 
         verify(spy, times(1)).init();
     }

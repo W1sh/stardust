@@ -10,14 +10,17 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ProviderContainerImpl implements ProviderContainer {
+public class ProviderContainerImpl implements ProviderContainer, InterceptorAware {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderContainerImpl.class);
+
+    private final List<InvocationInterceptor> interceptors = new ArrayList<>(8);
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
     private final Map<Class<?>, Metadata> metadatas = new ConcurrentHashMap<>(256);
@@ -114,7 +117,7 @@ public class ProviderContainerImpl implements ProviderContainer {
         Objects.requireNonNull(typeReference);
         return (List<T>) providers.entrySet().stream()
                 .filter(entry -> typeReference.getRawType().isAssignableFrom(entry.getKey()))
-                .filter(entry -> ((Class<?>)((ParameterizedType) typeReference.getType()).getActualTypeArguments()[0])
+                .filter(entry -> ((Class<?>) ((ParameterizedType) typeReference.getType()).getActualTypeArguments()[0])
                         .isAssignableFrom(Types.getInterfaceActualTypeArgument(entry.getKey(), 0)))
                 .map(entry -> entry.getValue().singletonInstance())
                 .toList();
@@ -188,5 +191,27 @@ public class ProviderContainerImpl implements ProviderContainer {
 
     private boolean isPrimary(Metadata metadata) {
         return metadata != null && metadata.primary() != null && metadata.primary();
+    }
+
+    @Override
+    public List<InvocationInterceptor> matchAll(InvocationInterceptor.InvocationType invocationType) {
+        return interceptors.stream()
+                .filter(invocationInterceptor -> invocationInterceptor.getInterceptorType().equals(invocationType))
+                .toList();
+    }
+
+    @Override
+    public void addInterceptor(InvocationInterceptor interceptor) {
+        interceptors.add(interceptor);
+    }
+
+    @Override
+    public void removeInterceptor(InvocationInterceptor interceptor) {
+        interceptors.remove(interceptor);
+    }
+
+    @Override
+    public void removeAllInterceptors() {
+        interceptors.clear();
     }
 }

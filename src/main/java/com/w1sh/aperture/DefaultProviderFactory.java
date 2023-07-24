@@ -18,11 +18,11 @@ public class DefaultProviderFactory implements ProviderFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultProviderFactory.class);
 
     private final ProviderContainer registry;
-    private final PostConstructorProcessor postConstructorProcessor;
+    private final InvocationInterceptor postConstructorProcessor;
 
     public DefaultProviderFactory(ProviderContainer registry) {
         this.registry = registry;
-        this.postConstructorProcessor = new JakartaPostConstructProcessor();
+        this.postConstructorProcessor = new JakartaPostConstructInterceptor();
     }
 
     @Override
@@ -30,7 +30,7 @@ public class DefaultProviderFactory implements ProviderFactory {
         if (Scope.SINGLETON.equals(definition.getMetadata().scope())) {
             if (definition instanceof ClassDefinition<T> classDefinition) {
                 T instance = createInstance(classDefinition);
-                postConstructorProcessor.process(instance);
+                postConstructorProcessor.intercept(instance);
                 return new SingletonObjectProvider<>(instance);
             } else if (definition instanceof ModuleMethodDefinition<T> methodDefinition) {
                 return new SingletonObjectProvider<>(methodDefinition.getSupplier().get());
@@ -39,7 +39,7 @@ public class DefaultProviderFactory implements ProviderFactory {
             if (definition instanceof ClassDefinition<T> classDefinition) {
                 return new PrototypeObjectProvider<>(() -> {
                     T instance = createInstance(classDefinition);
-                    postConstructorProcessor.process(instance);
+                    postConstructorProcessor.intercept(instance);
                     return instance;
                 });
             } else if (definition instanceof ModuleMethodDefinition<T> methodDefinition) {
@@ -82,12 +82,6 @@ public class DefaultProviderFactory implements ProviderFactory {
         }
         return newInstance(constructor, params);
     }
-
-    /**
-     * private Object resolveParameter(Parameter parameter) {
-     * <p>
-     * }
-     **/
 
     private <T> boolean containsCircularDependency(Constructor<T> constructor, Set<Class<?>> chain) {
         return Arrays.stream(constructor.getParameterTypes())

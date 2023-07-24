@@ -47,7 +47,7 @@ class AnnotationAwareMetadataFactoryTest {
     @Test
     void should_returnMergedMetadata_whenProvidedClassHasMetadataAnnotations() {
         Metadata metadata = metadataFactory.create(AnnotatedClass.class);
-        Metadata mergedMetadata = metadataFactory.merge(metadata, Metadata.builder().scope(Scope.PROTOTYPE).build());
+        Metadata mergedMetadata = metadata.merge(metadata);
 
         assertNotNull(mergedMetadata);
         assertEquals("ann", mergedMetadata.name());
@@ -63,7 +63,7 @@ class AnnotationAwareMetadataFactoryTest {
         Metadata classMetadata = metadataFactory.create(AnnotatedClass.class);
         Metadata metadata = Metadata.builder().scope(Scope.SINGLETON).build();
 
-        assertThrows(MetadataProcessingException.class, () -> metadataFactory.merge(classMetadata, metadata));
+        assertThrows(MetadataProcessingException.class, () -> classMetadata.merge(metadata));
     }
 
     @Test
@@ -87,14 +87,6 @@ class AnnotationAwareMetadataFactoryTest {
         assertEquals(Scope.SINGLETON, metadata.scope());
         assertNull(metadata.profiles());
         assertFalse(metadata.primary());
-    }
-
-    @Test
-    void should_returnEmptyMetadata_whenTwoEmptyMetadatasAreMerged() {
-        Metadata mergedMetadata = metadataFactory.merge(Metadata.empty(), Metadata.empty());
-
-        assertNotNull(mergedMetadata);
-        verify(metadataFactory, times(0)).mergeValue(any(), any());
     }
 
     @Primary

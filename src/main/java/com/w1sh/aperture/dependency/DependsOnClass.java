@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Resolver(SystemPropertyDependencyResolver.class)
 public @interface DependsOnClass {
 
-    Class<?>[] value() default {};
+    Class<?>[] value();
 }

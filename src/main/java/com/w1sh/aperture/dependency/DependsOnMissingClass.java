@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Resolver(SystemPropertyDependencyResolver.class)
 public @interface DependsOnMissingClass {
 
-    Class<?>[] value() default {};
+    Class<?>[] value();
 }

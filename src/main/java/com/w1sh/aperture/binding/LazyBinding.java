@@ -13,6 +13,10 @@ public class LazyBinding<T> implements Lazy<T> {
         this.provider = provider;
     }
 
+    public static <T> LazyBinding<T> of(ObjectProvider<T> provider) {
+        return provider != null ? new LazyBinding<>(provider) : null;
+    }
+
     @Override
     public synchronized T get() {
         if (delegate == null) {

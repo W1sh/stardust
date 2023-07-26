@@ -1,16 +1,18 @@
 package com.w1sh.aperture;
 
+import com.w1sh.aperture.InvocationInterceptor.InvocationType;
+import com.w1sh.aperture.annotation.Primary;
+import com.w1sh.aperture.annotation.Provide;
 import com.w1sh.aperture.exception.ProviderCandidatesException;
 import com.w1sh.aperture.exception.ProviderRegistrationException;
 import com.w1sh.aperture.naming.DefaultNamingStrategy;
 import com.w1sh.aperture.naming.NamingStrategy;
-import com.w1sh.aperture.util.Types;
+import com.w1sh.aperture.util.Constructors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,12 +22,11 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderContainerImpl.class);
 
-    private final List<InvocationInterceptor> interceptors = new ArrayList<>(8);
-
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
-    private final Map<Class<?>, Metadata> metadatas = new ConcurrentHashMap<>(256);
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
+    private final SetValueEnumMap<InvocationType, InvocationInterceptor> interceptors;
     private final NamingStrategy namingStrategy;
+    private final ParameterResolver resolver;
 
     private OverrideStrategy overrideStrategy = OverrideStrategy.ALLOWED;
 
@@ -35,29 +36,45 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
 
     public ProviderContainerImpl(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
-        this.register(new SingletonObjectProvider<>(this), ProviderContainerImpl.class, namingStrategy.generate(this.getClass()));
+        this.resolver = new ParameterResolver(this);
+        this.interceptors = new SetValueEnumMap<>(InvocationType.class);
+
+        final var provider = new SingletonObjectProvider<>(this);
+        providers.put(ProviderContainerImpl.class, provider);
+        named.put(namingStrategy.generate(this.getClass()), provider);
     }
 
-    @Override
-    public void register(ObjectProvider<?> provider, Class<?> clazz, String name) {
-        final var providerName = name != null ? name : namingStrategy.generate(clazz);
-        logger.debug("Registering provider of class {} with name {}", clazz.getSimpleName(), providerName);
+    public void register(Class<?> clazz) {
+        Objects.requireNonNull(clazz);
+        final var constructor = new ResolvableConstructorImpl<>(Constructors.getInjectConstructor(clazz));
+        register(constructor);
 
-        if (OverrideStrategy.NOT_ALLOWED.equals(overrideStrategy) && providers.containsKey(clazz)) {
-            throw ProviderRegistrationException.notAllowedClass(clazz);
+        if (List.of(clazz.getInterfaces()).contains(Module.class)) {
+            Object moduleInstance = instance(clazz);
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.isAnnotationPresent(Provide.class)) {
+                    final var resolvableMethod = new ResolvableMethodImpl<>(method, moduleInstance);
+                    register(resolvableMethod);
+                }
+            }
         }
-        if (OverrideStrategy.NOT_ALLOWED.equals(overrideStrategy) && named.containsKey(providerName)) {
-            throw ProviderRegistrationException.notAllowedName(providerName);
-        }
-
-        providers.put(clazz, provider);
-        named.put(providerName, provider);
     }
 
-    @Override
-    public void register(ObjectProvider<?> provider, Definition<?> definition) {
-        register(provider, definition.getClazz(), definition.getMetadata().name());
-        metadatas.put(definition.getClazz(), definition.getMetadata());
+    private void register(ResolvableExecutable<?> executable) {
+        Objects.requireNonNull(executable);
+        String name = Objects.requireNonNullElse(executable.getName(), namingStrategy.generate(executable.getActualType()));
+        logger.debug("Registering provider of class {} with name {}", executable.getActualType().getSimpleName(), name);
+
+        if (OverrideStrategy.NOT_ALLOWED.equals(overrideStrategy) && providers.containsKey(executable.getActualType())) {
+            throw ProviderRegistrationException.notAllowedClass(executable.getActualType());
+        }
+        if (OverrideStrategy.NOT_ALLOWED.equals(overrideStrategy) && named.containsKey(name)) {
+            throw ProviderRegistrationException.notAllowedName(name);
+        }
+
+        ObjectProvider<?> objProvider = asProvider(executable);
+        providers.put(executable.getActualType(), objProvider);
+        named.put(name, objProvider);
     }
 
     @Override
@@ -88,15 +105,15 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
         Objects.requireNonNull(clazz);
         List<? extends ObjectProvider<?>> primaries = providers.entrySet().stream()
                 .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
-                .filter(entry -> isPrimary(metadatas.get(entry.getKey())))
+                .filter(entry -> entry.getKey().isAnnotationPresent(Primary.class))
                 .map(Map.Entry::getValue)
                 .toList();
 
         if (primaries.isEmpty()) {
-            logger.error("Expected 1 primary candidate but found none for class {}", clazz);
+            logger.error("Expected 1 primary candidate but found none for class {}", clazz.getSimpleName());
             throw new ProviderCandidatesException(0, clazz);
         } else if (primaries.size() > 1) {
-            logger.error("Expected 1 primary candidate but found {} for class {}", primaries.size(), clazz);
+            logger.error("Expected 1 primary candidate but found {} for class {}", primaries.size(), clazz.getSimpleName());
             throw new ProviderCandidatesException(primaries.size(), clazz);
         }
         return (ObjectProvider<T>) primaries.get(0);
@@ -108,18 +125,6 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
         Objects.requireNonNull(clazz);
         return (List<T>) candidates(clazz).stream()
                 .map(ObjectProvider::singletonInstance)
-                .toList();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> List<T> instances(TypeReference<T> typeReference) {
-        Objects.requireNonNull(typeReference);
-        return (List<T>) providers.entrySet().stream()
-                .filter(entry -> typeReference.getRawType().isAssignableFrom(entry.getKey()))
-                .filter(entry -> ((Class<?>) ((ParameterizedType) typeReference.getType()).getActualTypeArguments()[0])
-                        .isAssignableFrom(Types.getInterfaceActualTypeArgument(entry.getKey(), 0)))
-                .map(entry -> entry.getValue().singletonInstance())
                 .toList();
     }
 
@@ -176,7 +181,7 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
         final var candidates = candidates(clazz);
 
         if (candidates.size() > 1) {
-            logger.error("Expected 1 candidate but found {} for class {}", candidates.size(), clazz);
+            logger.error("Expected 1 candidate but found {} for class {}", candidates.size(), clazz.getSimpleName());
             throw new ProviderCandidatesException(candidates.size(), clazz);
         }
         return candidates.isEmpty() ? null : (ObjectProvider<T>) candidates.get(0);
@@ -189,29 +194,39 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
                 .toList();
     }
 
-    private boolean isPrimary(Metadata metadata) {
-        return metadata != null && metadata.primary() != null && metadata.primary();
+    @SuppressWarnings("unchecked")
+    private <T> T asProvider(ResolvableExecutable<?> executable) {
+        if (Scope.SINGLETON.equals(executable.getScope())) {
+            Object instance = createInstance(executable);
+            return (T) new SingletonObjectProvider<>(instance);
+        } else {
+            return (T) new PrototypeObjectProvider<>(() -> createInstance(executable));
+        }
     }
 
-    @Override
-    public List<InvocationInterceptor> matchAll(InvocationInterceptor.InvocationType invocationType) {
-        return interceptors.stream()
-                .filter(invocationInterceptor -> invocationInterceptor.getInterceptorType().equals(invocationType))
-                .toList();
+    @SuppressWarnings("unchecked")
+    private <T> T createInstance(ResolvableExecutable<?> executable) {
+        final var postConstructInterceptors = interceptors.get(InvocationType.POST_CONSTRUCT);
+        Object[] objects = executable.getParameters().stream()
+                .map(resolver::resolve)
+                .toArray();
+        T resolved = (T) executable.resolve(objects);
+        postConstructInterceptors.forEach(invocationInterceptor -> invocationInterceptor.intercept(resolved));
+        return resolved;
     }
 
     @Override
     public void addInterceptor(InvocationInterceptor interceptor) {
-        interceptors.add(interceptor);
+        interceptors.put(interceptor.getInterceptorType(), interceptor);
     }
 
     @Override
     public void removeInterceptor(InvocationInterceptor interceptor) {
-        interceptors.remove(interceptor);
+        interceptors.remove(interceptor.getInterceptorType(), interceptor);
     }
 
     @Override
     public void removeAllInterceptors() {
-        interceptors.clear();
+        interceptors.getUnderlyingEnumMap().clear();
     }
 }

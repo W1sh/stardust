@@ -12,6 +12,10 @@ public class ProviderBinding<T> implements Provider<T> {
         this.provider = provider;
     }
 
+    public static <T> ProviderBinding<T> of(ObjectProvider<T> provider) {
+        return provider != null ? new ProviderBinding<>(provider) : null;
+    }
+
     @Override
     public T get() {
         return requireNonNull(provider.newInstance());

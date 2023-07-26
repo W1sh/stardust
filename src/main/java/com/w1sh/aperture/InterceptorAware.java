@@ -1,10 +1,6 @@
 package com.w1sh.aperture;
 
-import java.util.List;
-
 public interface InterceptorAware {
-
-    List<InvocationInterceptor> matchAll(InvocationInterceptor.InvocationType invocationType);
 
     /**
      * Add a {@link InvocationInterceptor interceptor} to be one a certain {@link InvocationInterceptor.InvocationType}.

@@ -1,5 +1,6 @@
 package com.w1sh.aperture;
 
+import com.w1sh.aperture.annotation.Provide;
 import com.w1sh.aperture.exception.PostConstructInvocationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.LinkedList;
 
+@Provide
 public class JakartaPostConstructInterceptor implements InvocationInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(JakartaPostConstructInterceptor.class);

@@ -1,15 +1,21 @@
 package com.w1sh.aperture;
 
 import com.w1sh.aperture.annotation.Primary;
-import com.w1sh.aperture.condition.*;
-import com.w1sh.aperture.exception.ProviderCandidatesException;
-import com.w1sh.aperture.exception.ProviderRegistrationException;
+import com.w1sh.aperture.annotation.Profile;
+import com.w1sh.aperture.annotation.Provide;
+import com.w1sh.aperture.dependency.ActiveProfileDependencyResolver;
+import com.w1sh.aperture.dependency.DependencyResolver;
+import com.w1sh.aperture.dependency.SystemPropertyDependencyResolver;
 import com.w1sh.aperture.example.controller.CalculatorController;
+import com.w1sh.aperture.example.controller.impl.BindingDependantControllerImpl;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
 import com.w1sh.aperture.example.controller.impl.EmptyCalculatorControllerImpl;
+import com.w1sh.aperture.example.controller.impl.PrimaryControllerImpl;
 import com.w1sh.aperture.example.service.CalculatorService;
+import com.w1sh.aperture.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.aperture.example.service.impl.DuplicateCalculatorServiceImpl;
-import com.w1sh.aperture.util.Tests;
+import com.w1sh.aperture.exception.ProviderCandidatesException;
+import com.w1sh.aperture.exception.ProviderRegistrationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,30 +34,25 @@ class ProviderContainerImplTest {
 
     @Test
     void should_returnInstance_whenProviderOfClassIsRegistered() {
-        final var provider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.register(provider, DuplicateCalculatorServiceImpl.class, "duplicate");
+        registry.register(DuplicateCalculatorServiceImpl.class);
 
         DuplicateCalculatorServiceImpl instance = registry.instance(DuplicateCalculatorServiceImpl.class);
 
         assertNotNull(instance);
-        assertEquals(provider.singletonInstance(), instance);
     }
 
     @Test
     void should_returnInstance_whenProviderWithNameIsRegistered() {
-        final var provider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.register(provider, DuplicateCalculatorServiceImpl.class, "duplicate");
+        registry.register(DuplicateCalculatorServiceImpl.class);
 
-        DuplicateCalculatorServiceImpl instance = registry.instance("duplicate");
+        DuplicateCalculatorServiceImpl instance = registry.instance("duplicateCalculatorServiceImpl");
 
         assertNotNull(instance);
-        assertEquals(provider.singletonInstance(), instance);
     }
 
     @Test
     void should_returnNull_whenProviderWithNameIsNotRegistered() {
-        final var provider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.register(provider, DuplicateCalculatorServiceImpl.class, "duplicate");
+        registry.register(DuplicateCalculatorServiceImpl.class);
 
         Object instance = registry.instance("calculator");
 
@@ -60,8 +61,7 @@ class ProviderContainerImplTest {
 
     @Test
     void should_returnNull_whenProviderOfClassIsNotRegistered() {
-        final var provider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.register(provider, DuplicateCalculatorServiceImpl.class, "duplicate");
+        registry.register(DuplicateCalculatorServiceImpl.class);
 
         Object instance = registry.instance(CalculatorController.class);
 
@@ -70,21 +70,17 @@ class ProviderContainerImplTest {
 
     @Test
     void should_returnInstance_whenProviderOfSubclassIsRegistered() {
-        final var provider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.register(provider, DuplicateCalculatorServiceImpl.class, "duplicate");
+        registry.register(DuplicateCalculatorServiceImpl.class);
 
         CalculatorService instance = registry.instance(CalculatorService.class);
 
         assertNotNull(instance);
-        assertEquals(provider.singletonInstance(), instance);
     }
 
     @Test
     void should_returnAllClassesRegisteredAnnotated_whenGivenAnnotation() {
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
-        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
-        registry.register(provider2, EmptyCalculatorControllerImpl.class, "EmptyCalculatorControllerImpl");
+        registry.register(CalculatorControllerImpl.class);
+        registry.register(EmptyCalculatorControllerImpl.class);
 
         List<Class<?>> classes = registry.getAllAnnotatedWith(Primary.class);
 
@@ -95,37 +91,16 @@ class ProviderContainerImplTest {
 
     @Test
     void should_throwRegistrationException_whenTryingToRegisterClassTwiceButOverrideNotAllowed() {
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
         registry.setOverrideStrategy(ProviderContainer.OverrideStrategy.NOT_ALLOWED);
-        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
+        registry.register(CalculatorControllerImpl.class);
 
-        assertThrows(ProviderRegistrationException.class, () ->
-                registry.register(provider2, CalculatorControllerImpl.class, "CalculatorControllerImpl"));
-    }
-
-    @Test
-    void should_throwRegistrationException_whenTryingToRegisterWithSameNameTwiceButOverrideNotAllowed() {
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.setOverrideStrategy(ProviderContainer.OverrideStrategy.NOT_ALLOWED);
-        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
-
-        assertEquals(ProviderContainer.OverrideStrategy.NOT_ALLOWED, registry.getOverrideStrategy());
-        assertThrows(ProviderRegistrationException.class, () ->
-                registry.register(provider2, DuplicateCalculatorServiceImpl.class, "CalculatorControllerImpl"));
+        assertThrows(ProviderRegistrationException.class, () -> registry.register(CalculatorControllerImpl.class));
     }
 
     @Test
     void should_returnPrimaryInstanceOrProvider_whenMultipleProvidersAreRegisteredAndOneIsPrimary() {
-        final var definition1 = Tests.definition(CalculatorControllerImpl.class, Metadata.builder()
-                .primary(true)
-                .build());
-        final var definition2 = Tests.definition(DuplicateCalculatorServiceImpl.class);
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        registry.register(provider1, definition1);
-        registry.register(provider2, definition2);
+        registry.register(CalculatorControllerImpl.class);
+        registry.register(DuplicateCalculatorServiceImpl.class);
 
         CalculatorController instance = registry.primaryInstance(CalculatorController.class);
         ObjectProvider<CalculatorController> provider = registry.primaryProvider(CalculatorController.class);
@@ -138,16 +113,8 @@ class ProviderContainerImplTest {
 
     @Test
     void should_throwProviderCandidatesException_whenMultiplePrimaryProvidersAreRegistered() {
-        final var definition1 = Tests.definition(CalculatorControllerImpl.class, Metadata.builder()
-                .primary(true)
-                .build());
-        final var definition2 = Tests.definition(EmptyCalculatorControllerImpl.class, Metadata.builder()
-                .primary(true)
-                .build());
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
-        registry.register(provider1, definition1);
-        registry.register(provider2, definition2);
+        registry.register(CalculatorControllerImpl.class);
+        registry.register(PrimaryControllerImpl.class);
 
         assertThrows(ProviderCandidatesException.class, () -> registry.primaryInstance(CalculatorController.class));
         assertThrows(ProviderCandidatesException.class, () -> registry.primaryProvider(CalculatorController.class));
@@ -155,12 +122,8 @@ class ProviderContainerImplTest {
 
     @Test
     void should_throwProviderCandidatesException_whenNoPrimaryProvidersAreRegistered() {
-        final var definition1 = Tests.definition(CalculatorControllerImpl.class);
-        final var definition2 = Tests.definition(EmptyCalculatorControllerImpl.class);
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
-        registry.register(provider1, definition1);
-        registry.register(provider2, definition2);
+        registry.register(BindingDependantControllerImpl.class);
+        registry.register(EmptyCalculatorControllerImpl.class);
 
         assertThrows(ProviderCandidatesException.class, () -> registry.primaryInstance(CalculatorController.class));
         assertThrows(ProviderCandidatesException.class, () -> registry.primaryProvider(CalculatorController.class));
@@ -168,10 +131,8 @@ class ProviderContainerImplTest {
 
     @Test
     void should_returnAllInstances_whenMultipleProvidersAreRegisteredForClass() {
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
-        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
-        registry.register(provider2, EmptyCalculatorControllerImpl.class, "EmptyCalculatorControllerImpl");
+        registry.register(CalculatorControllerImpl.class);
+        registry.register(EmptyCalculatorControllerImpl.class);
 
         List<CalculatorController> instances = registry.instances(CalculatorController.class);
         List<ObjectProvider<CalculatorController>> providers = registry.providers(CalculatorController.class);
@@ -184,32 +145,23 @@ class ProviderContainerImplTest {
 
     @Test
     void should_returnTrue_whenThereIsAtLeastOneProviderRegisteredForClass() {
-        final var provider1 = new SingletonObjectProvider<>(new CalculatorControllerImpl());
-        final var provider2 = new SingletonObjectProvider<>(new EmptyCalculatorControllerImpl());
-        registry.register(provider1, CalculatorControllerImpl.class, "CalculatorControllerImpl");
-        registry.register(provider2, EmptyCalculatorControllerImpl.class, "EmptyCalculatorControllerImpl");
+        registry.register(CalculatorControllerImpl.class);
+        registry.register(EmptyCalculatorControllerImpl.class);
 
         boolean containsClass = registry.contains(CalculatorController.class);
-        boolean containsName = registry.contains("CalculatorControllerImpl");
+        boolean containsName = registry.contains("calculatorControllerImpl");
 
         assertTrue(containsClass);
         assertTrue(containsName);
     }
 
     @Test
-    void should_returnAllInstances_whenMultipleProvidersAreRegisteredForTypeReference() {
-        final var provider1 = new SingletonObjectProvider<>(new ActiveProfileConditionFactory());
-        final var provider2 = new SingletonObjectProvider<>(new SystemPropertyConditionFactory());
-        registry.register(provider1, ActiveProfileConditionFactory.class, "ActiveProfileConditionFactory");
-        registry.register(provider2, SystemPropertyConditionFactory.class, "SystemPropertyConditionFactory");
+    void should_returnInstance_whenRegisteredViaModule() {
+        registry.register(AnnotatedClass.class);
 
-        List<MetadataConditionFactory<ActiveProfileCondition>> instances1 = registry.instances(new TypeReference<>() {});
-        List<MetadataConditionFactory<Condition>> instances2 = registry.instances(new TypeReference<>() {});
+        CalculatorController controller = registry.instance(CalculatorController.class);
 
-        assertNotNull(instances1);
-        assertEquals(1, instances1.size());
-        assertNotNull(instances2);
-        assertEquals(2, instances2.size());
+        assertNotNull(controller);
     }
 
     @Test
@@ -254,12 +206,7 @@ class ProviderContainerImplTest {
 
     @Test
     void should_throwNullPointerException_whenTryingToRetrieveInstancesWithNullClass() {
-        assertThrows(NullPointerException.class, () -> registry.instances((Class<Object>) null));
-    }
-
-    @Test
-    void should_throwNullPointerException_whenTryingToRetrieveInstancesWithNullTypeReference() {
-        assertThrows(NullPointerException.class, () -> registry.instances((TypeReference<?>) null));
+        assertThrows(NullPointerException.class, () -> registry.instances(null));
     }
 
     @Test
@@ -279,5 +226,22 @@ class ProviderContainerImplTest {
         boolean contains = registry.contains((String) null);
 
         assertFalse(contains);
+    }
+
+    @Provide
+    private static class AnnotatedClass implements Module {
+
+        public AnnotatedClass() {}
+
+        @Primary
+        @Profile("module")
+        @Provide
+        public CalculatorController controller() {
+            return new CalculatorControllerImpl();
+        }
+
+        public CalculatorService service() {
+            return new CalculatorServiceImpl();
+        }
     }
 }

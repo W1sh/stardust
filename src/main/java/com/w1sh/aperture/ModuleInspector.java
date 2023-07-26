@@ -25,8 +25,8 @@ public class ModuleInspector {
                 .toList();
     }
 
-    public static List<Class<?>> findAllAnnotatedBy(Class<? extends Annotation> annotation) {
-        return ModuleInspector.find(MODULE_NAME)
+    public static List<Class<?>> findAllAnnotatedBy(String module, Class<? extends Annotation> annotation) {
+        return ModuleInspector.find(module)
                 .stream()
                 .filter(aClass -> aClass.isAnnotationPresent(annotation))
                 .toList();

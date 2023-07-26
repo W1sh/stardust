@@ -10,7 +10,7 @@ public class Constructors {
     private Constructors() {}
 
     @SuppressWarnings("unchecked")
-    public static <T> Constructor<T> findInjectAnnotatedConstructor(Class<T> clazz) {
+    public static <T> Constructor<T> getInjectConstructor(Class<T> clazz) {
         Constructor<T> injectConstructor = null;
         for (Constructor<?> declaredConstructor : clazz.getDeclaredConstructors()) {
             if (declaredConstructor.isAnnotationPresent(Inject.class)) {

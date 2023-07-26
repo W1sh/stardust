@@ -4,9 +4,7 @@ import java.util.List;
 
 public interface ProviderContainer {
 
-    void register(ObjectProvider<?> provider, Class<?> clazz, String name);
-
-    void register(ObjectProvider<?> provider, Definition<?> definition);
+    void register(Class<?> clazz);
 
     <T> T instance(Class<T> clazz);
 
@@ -17,8 +15,6 @@ public interface ProviderContainer {
     <T> ObjectProvider<T> primaryProvider(Class<T> clazz);
 
     <T> List<T> instances(Class<T> clazz);
-
-    <T> List<T> instances(TypeReference<T> typeReference);
 
     <T> ObjectProvider<T> provider(Class<T> clazz);
 

@@ -1,5 +1,8 @@
 package com.w1sh.aperture;
 
+import com.w1sh.aperture.annotation.Provide;
+
+@Provide
 public class JakartaPreDestroyInterceptor implements InvocationInterceptor {
 
     @Override

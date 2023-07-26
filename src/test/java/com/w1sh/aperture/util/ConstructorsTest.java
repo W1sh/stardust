@@ -11,7 +11,7 @@ class ConstructorsTest {
 
     @Test
     void should_returnNoArgConstructor_whenNoConstructorIsAvailable() {
-        final var constructor = Constructors.findInjectAnnotatedConstructor(EmptyCalculatorControllerImpl.class);
+        final var constructor = Constructors.getInjectConstructor(EmptyCalculatorControllerImpl.class);
 
         assertNotNull(constructor);
         assertEquals(0, constructor.getParameterCount());
@@ -19,7 +19,7 @@ class ConstructorsTest {
 
     @Test
     void should_returnInjectedAnnotatedConstructor_whenOneIsPresent() {
-        final var constructor = Constructors.findInjectAnnotatedConstructor(CalculatorServiceImpl.class);
+        final var constructor = Constructors.getInjectConstructor(CalculatorServiceImpl.class);
 
         assertNotNull(constructor);
         assertTrue(constructor.isAnnotationPresent(Inject.class));

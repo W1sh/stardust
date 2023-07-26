@@ -1,6 +1,7 @@
 package com.w1sh.aperture;
 
 import com.w1sh.aperture.InvocationInterceptor.InvocationType;
+import com.w1sh.aperture.annotation.Module;
 import com.w1sh.aperture.annotation.Primary;
 import com.w1sh.aperture.annotation.Provide;
 import com.w1sh.aperture.exception.ProviderCandidatesException;
@@ -49,7 +50,7 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
         final var constructor = new ResolvableConstructorImpl<>(Constructors.getInjectConstructor(clazz));
         register(constructor);
 
-        if (List.of(clazz.getInterfaces()).contains(Module.class)) {
+        if (clazz.isAnnotationPresent(Module.class)) {
             Object moduleInstance = instance(clazz);
             for (Method method : clazz.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Provide.class)) {

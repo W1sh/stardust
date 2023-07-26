@@ -13,16 +13,13 @@ import java.util.Set;
 public class ResolvableParameterImpl<S> implements ResolvableParameter<S> {
 
     private final Parameter parameter;
-    private final int index;
-    private final Executable executable;
 
-    public ResolvableParameterImpl(Parameter parameter, int index, Executable executable) {
+    public ResolvableParameterImpl(Parameter parameter) {
         this.parameter = parameter;
-        this.index = index;
-        this.executable = executable;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Class<S> getActualType() {
         return (Class<S>) parameter.getType();
     }

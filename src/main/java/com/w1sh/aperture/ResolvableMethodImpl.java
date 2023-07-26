@@ -26,15 +26,15 @@ public class ResolvableMethodImpl<S> implements ResolvableExecutable<S> {
         this.declaringClassInstance = declaringClassInstance;
         Set<ResolvableParameter<?>> set = new HashSet<>();
         Parameter[] methodParameters = method.getParameters();
-        for (int i = 0, methodParametersLength = methodParameters.length; i < methodParametersLength; i++) {
-            Parameter parameter = methodParameters[i];
-            ResolvableParameterImpl<?> resolvableParameterImpl = new ResolvableParameterImpl<>(parameter, i, method);
+        for (Parameter parameter : methodParameters) {
+            ResolvableParameterImpl<?> resolvableParameterImpl = new ResolvableParameterImpl<>(parameter);
             set.add(resolvableParameterImpl);
         }
         this.parameters = set;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Class<S> getActualType() {
         return (Class<S>) method.getReturnType();
     }

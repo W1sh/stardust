@@ -1,11 +1,9 @@
 package com.w1sh.aperture;
 
+import com.w1sh.aperture.annotation.Module;
 import com.w1sh.aperture.annotation.Primary;
 import com.w1sh.aperture.annotation.Profile;
 import com.w1sh.aperture.annotation.Provide;
-import com.w1sh.aperture.dependency.ActiveProfileDependencyResolver;
-import com.w1sh.aperture.dependency.DependencyResolver;
-import com.w1sh.aperture.dependency.SystemPropertyDependencyResolver;
 import com.w1sh.aperture.example.controller.CalculatorController;
 import com.w1sh.aperture.example.controller.impl.BindingDependantControllerImpl;
 import com.w1sh.aperture.example.controller.impl.CalculatorControllerImpl;
@@ -228,8 +226,8 @@ class ProviderContainerImplTest {
         assertFalse(contains);
     }
 
-    @Provide
-    private static class AnnotatedClass implements Module {
+    @Module
+    private static class AnnotatedClass {
 
         public AnnotatedClass() {}
 

@@ -27,22 +27,28 @@ public class ResolvableConstructorImpl<S> implements ResolvableExecutable<S> {
         this.constructor = constructor;
         Set<ResolvableParameter<?>> set = new HashSet<>();
         Parameter[] methodParameters = constructor.getParameters();
-        for (int i = 0, methodParametersLength = methodParameters.length; i < methodParametersLength; i++) {
-            Parameter parameter = methodParameters[i];
-            ResolvableParameterImpl<?> resolvableParameterImpl = new ResolvableParameterImpl<>(parameter, i, constructor);
+        for (Parameter parameter : methodParameters) {
+            ResolvableParameterImpl<?> resolvableParameterImpl = new ResolvableParameterImpl<>(parameter);
             set.add(resolvableParameterImpl);
         }
         this.parameters = set;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Class<S> getActualType() {
         return (Class<S>) constructor.getDeclaringClass();
     }
 
     @Override
     public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-        return getActualType().getAnnotation(annotationType);
+        T annotation = getActualType().getAnnotation(annotationType);
+        if (annotation != null) return annotation;
+        for (Annotation declaredAnnotation : getActualType().getDeclaredAnnotations()) {
+            T nestedAnnotation = declaredAnnotation.annotationType().getAnnotation(annotationType);
+            if (nestedAnnotation != null) return nestedAnnotation;
+        }
+        return null;
     }
 
     @Override

@@ -12,20 +12,18 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class ResolvableConstructorImpl<S> implements ResolvableExecutable<S> {
 
     private static final Logger logger = LoggerFactory.getLogger(ResolvableConstructorImpl.class);
 
     private final Constructor<?> constructor;
-    private final Set<ResolvableParameter<?>> parameters;
+    private final List<ResolvableParameter<?>> parameters;
 
     public ResolvableConstructorImpl(Constructor<?> constructor) {
         this.constructor = constructor;
-        Set<ResolvableParameter<?>> set = new HashSet<>();
+        List<ResolvableParameter<?>> set = new ArrayList<>();
         Parameter[] methodParameters = constructor.getParameters();
         for (Parameter parameter : methodParameters) {
             ResolvableParameterImpl<?> resolvableParameterImpl = new ResolvableParameterImpl<>(parameter);
@@ -93,7 +91,7 @@ public class ResolvableConstructorImpl<S> implements ResolvableExecutable<S> {
     }
 
     @Override
-    public Set<ResolvableParameter<?>> getParameters() {
+    public List<ResolvableParameter<?>> getParameters() {
         return parameters;
     }
 

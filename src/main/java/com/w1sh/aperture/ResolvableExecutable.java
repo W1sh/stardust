@@ -1,5 +1,6 @@
 package com.w1sh.aperture;
 
+import java.util.List;
 import java.util.Set;
 
 public interface ResolvableExecutable<S> extends Resolvable<S> {
@@ -14,7 +15,7 @@ public interface ResolvableExecutable<S> extends Resolvable<S> {
 
     String getName();
 
-    Set<ResolvableParameter<?>> getParameters();
+    List<ResolvableParameter<?>> getParameters();
 
     Object resolve(Object[] args);
 

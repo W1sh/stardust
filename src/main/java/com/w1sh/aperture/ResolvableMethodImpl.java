@@ -11,20 +11,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class ResolvableMethodImpl<S> implements ResolvableExecutable<S> {
 
     private final Method method;
-    private final Set<ResolvableParameter<?>> parameters;
+    private final List<ResolvableParameter<?>> parameters;
     private final Object declaringClassInstance;
 
     public ResolvableMethodImpl(Method method, Object declaringClassInstance) {
         this.method = method;
         this.declaringClassInstance = declaringClassInstance;
-        Set<ResolvableParameter<?>> set = new HashSet<>();
+        List<ResolvableParameter<?>> set = new ArrayList<>();
         Parameter[] methodParameters = method.getParameters();
         for (Parameter parameter : methodParameters) {
             ResolvableParameterImpl<?> resolvableParameterImpl = new ResolvableParameterImpl<>(parameter);
@@ -89,7 +87,7 @@ public class ResolvableMethodImpl<S> implements ResolvableExecutable<S> {
     }
 
     @Override
-    public Set<ResolvableParameter<?>> getParameters() {
+    public List<ResolvableParameter<?>> getParameters() {
         return parameters;
     }
 

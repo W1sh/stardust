@@ -23,8 +23,6 @@ class JakartaPostConstructInterceptorTest {
         public PostConstructClass(){}
 
         @PostConstruct
-        public void init(){
-            System.out.println("Ran post construct");
-        }
+        public void init(){}
     }
 }

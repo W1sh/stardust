@@ -6,6 +6,7 @@ import com.w1sh.aperture.exception.ProviderInitializationException;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ public class ParameterResolver {
         } else if (Collection.class.isAssignableFrom(parameter.getActualType())) {
             throw new UnsupportedOperationException();
         } else if (parameter.getActualType().isArray()) {
-            throw new UnsupportedOperationException();
+            return resolveArrayType(parameter);
         } else if (Binding.class.isAssignableFrom(parameter.getActualType())) {
             return resolveParameterizedType(parameter);
         } else {
@@ -58,5 +59,11 @@ public class ParameterResolver {
             return ProviderBinding.of(provider);
         }
         throw new ComponentCreationException(String.format("Unknown binding expectedType %s", type.getRawType()));
+    }
+
+    private Object[] resolveArrayType(ResolvableParameter<?> parameter){
+        final var arrayType = parameter.getActualType().componentType();
+        List<?> instances = container.instances(arrayType);
+        return instances.toArray();
     }
 }

@@ -9,11 +9,13 @@ import com.w1sh.aperture.exception.ProviderRegistrationException;
 import com.w1sh.aperture.naming.DefaultNamingStrategy;
 import com.w1sh.aperture.naming.NamingStrategy;
 import com.w1sh.aperture.util.Constructors;
+import com.w1sh.aperture.util.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -212,7 +214,9 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
                 .map(resolver::resolve)
                 .toArray();
         T resolved = (T) executable.resolve(objects);
-        postConstructInterceptors.forEach(invocationInterceptor -> invocationInterceptor.intercept(resolved));
+        postConstructInterceptors.stream()
+                .sorted(Comparator.comparing(o -> Types.getPriority(o.getClass())))
+                .forEach(invocationInterceptor -> invocationInterceptor.intercept(resolved));
         return resolved;
     }
 

@@ -1,10 +1,12 @@
 package com.w1sh.aperture;
 
-import com.w1sh.aperture.binding.Binding;
+import com.w1sh.aperture.binding.*;
+import com.w1sh.aperture.example.CustomBinding;
 import com.w1sh.aperture.example.controller.impl.*;
 import com.w1sh.aperture.example.service.MerchantService;
 import com.w1sh.aperture.example.service.impl.BetterCalculatorServiceImpl;
 import com.w1sh.aperture.example.service.impl.MerchantServiceImpl;
+import com.w1sh.aperture.exception.ComponentCreationException;
 import com.w1sh.aperture.exception.ProviderInitializationException;
 import com.w1sh.aperture.util.Constructors;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +27,8 @@ class ParameterResolverTest {
     void setUp() {
         container = spy(new ProviderContainerImpl());
         resolver = new ParameterResolver(container);
+        resolver.addBindingResolver(Lazy.class, LazyBinding::of);
+        resolver.addBindingResolver(Provider.class, ProviderBinding::of);
     }
 
     @Test
@@ -69,6 +73,15 @@ class ParameterResolverTest {
     }
 
     @Test
+    void should_throwProviderInitializationException_whenParameterIsRequiredAndNotResolvable() {
+        final var injectConstructor = Constructors.getInjectConstructor(RequiredDependantControllerImpl.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+        ResolvableParameter<?> parameter = (ResolvableParameter<?>) constructor.getParameters().toArray()[0];
+
+        assertThrows(ProviderInitializationException.class, () -> resolver.resolve(parameter));
+    }
+
+    @Test
     void should_returnNull_whenParameterIsClassAndNotResolvable() {
         final var injectConstructor = Constructors.getInjectConstructor(BetterCalculatorServiceImpl.class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
@@ -81,12 +94,12 @@ class ParameterResolverTest {
     }
 
     @Test
-    void should_throwProviderInitializationException_whenParameterIsRequiredAndNotResolvable() {
-        final var injectConstructor = Constructors.getInjectConstructor(RequiredDependantControllerImpl.class);
+    void should_throwComponentCreationException_whenParameterIsBindingButNotResolvable() throws NoSuchMethodException {
+        final var injectConstructor = BindingDependantControllerImpl.class.getConstructor(CustomBinding.class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
         ResolvableParameter<?> parameter = (ResolvableParameter<?>) constructor.getParameters().toArray()[0];
 
-        assertThrows(ProviderInitializationException.class, () -> resolver.resolve(parameter));
+        assertThrows(ComponentCreationException.class, () -> resolver.resolve(parameter));
     }
 
     @Test

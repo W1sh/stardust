@@ -5,17 +5,22 @@ import com.w1sh.aperture.exception.ComponentCreationException;
 import com.w1sh.aperture.exception.ProviderInitializationException;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ParameterResolver {
 
+    private static final Map<Class<? extends Binding>, Function<ObjectProvider<?>, ? extends Binding<?>>> bindingResolvers = new ConcurrentHashMap<>(8);
     private final ProviderContainer container;
 
     public ParameterResolver(ProviderContainer container) {
         this.container = container;
+    }
+
+    public <T extends Binding<?>> void addBindingResolver(Class<T> bindingClass, Function<ObjectProvider<?>, T> bindingResolver) {
+        bindingResolvers.put(bindingClass, bindingResolver);
     }
 
     public Object resolve(ResolvableParameter<?> parameter) {
@@ -53,13 +58,11 @@ public class ParameterResolver {
         if (provider == null && Boolean.TRUE.equals(parameter.isRequired())) {
             throw ProviderInitializationException.required(parameter.getActualType().getSimpleName());
         }
-        if (type.getRawType().equals(Lazy.class)) {
-            return LazyBinding.of(provider);
+        if (bindingResolvers.containsKey((Class<? extends Binding<?>>) type.getRawType())) {
+            return bindingResolvers.get((Class<? extends Binding<?>>) type.getRawType()).apply(provider);
+        } else {
+            throw new ComponentCreationException(String.format("No known resolver for binding %s", type.getRawType()));
         }
-        if (type.getRawType().equals(Provider.class)) {
-            return ProviderBinding.of(provider);
-        }
-        throw new ComponentCreationException(String.format("Unknown binding expectedType %s", type.getRawType()));
     }
 
     private Object[] resolveArrayType(ResolvableParameter<?> parameter) {

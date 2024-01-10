@@ -2,7 +2,9 @@ package com.w1sh.aperture;
 
 import com.w1sh.aperture.binding.*;
 import com.w1sh.aperture.example.CustomBinding;
-import com.w1sh.aperture.example.controller.impl.*;
+import com.w1sh.aperture.example.controller.impl.BindingDependantControllerImpl;
+import com.w1sh.aperture.example.controller.impl.CollectionDependantControllerImpl;
+import com.w1sh.aperture.example.controller.impl.RequiredDependantControllerImpl;
 import com.w1sh.aperture.example.service.MerchantService;
 import com.w1sh.aperture.example.service.impl.BetterCalculatorServiceImpl;
 import com.w1sh.aperture.example.service.impl.MerchantServiceImpl;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -103,8 +106,8 @@ class ParameterResolverTest {
     }
 
     @Test
-    void should_returnEmptyArray_whenParameterIsArrayAndNotResolvable() {
-        final var injectConstructor = Constructors.getInjectConstructor(ArrayDependantControllerImpl.class);
+    void should_returnEmptyArray_whenParameterIsArrayAndNotResolvable() throws NoSuchMethodException {
+        final var injectConstructor = CollectionDependantControllerImpl.class.getConstructor(MerchantService[].class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
         ResolvableParameter<?> parameter = (ResolvableParameter<?>) constructor.getParameters().toArray()[0];
 
@@ -117,8 +120,8 @@ class ParameterResolverTest {
     }
 
     @Test
-    void should_returnArray_whenParameterIsArrayAndResolvable() {
-        final var injectConstructor = Constructors.getInjectConstructor(ArrayDependantControllerImpl.class);
+    void should_returnArray_whenParameterIsArrayAndResolvable() throws NoSuchMethodException {
+        final var injectConstructor = CollectionDependantControllerImpl.class.getConstructor(MerchantService[].class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
         ResolvableParameter<?> parameter = (ResolvableParameter<?>) constructor.getParameters().toArray()[0];
 
@@ -163,8 +166,8 @@ class ParameterResolverTest {
     }
 
     @Test
-    void should_throwUnsupportedOperationException_whenParameterIsCollectionButNotSupported() {
-        final var injectConstructor = Constructors.getInjectConstructor(UnsupportedCollectionDependantControllerImpl.class);
+    void should_throwUnsupportedOperationException_whenParameterIsCollectionButNotSupported() throws NoSuchMethodException {
+        final var injectConstructor = CollectionDependantControllerImpl.class.getConstructor(Queue.class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
         ResolvableParameter<?> parameter = (ResolvableParameter<?>) constructor.getParameters().toArray()[0];
 

@@ -1,18 +1,18 @@
 package com.w1sh.aperture;
 
-import com.w1sh.aperture.binding.*;
+import com.w1sh.aperture.binding.Binding;
 import com.w1sh.aperture.exception.ComponentCreationException;
 import com.w1sh.aperture.exception.ProviderInitializationException;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ParameterResolver {
 
-    private static final Map<Class<? extends Binding>, Function<ObjectProvider<?>, ? extends Binding<?>>> bindingResolvers = new ConcurrentHashMap<>(8);
+    private static final Map<Type, Function<ObjectProvider<?>, ? extends Binding<?>>> bindingResolvers = new ConcurrentHashMap<>(8);
     private final ProviderContainer container;
 
     public ParameterResolver(ProviderContainer container) {
@@ -58,8 +58,8 @@ public class ParameterResolver {
         if (provider == null && Boolean.TRUE.equals(parameter.isRequired())) {
             throw ProviderInitializationException.required(parameter.getActualType().getSimpleName());
         }
-        if (bindingResolvers.containsKey((Class<? extends Binding<?>>) type.getRawType())) {
-            return bindingResolvers.get((Class<? extends Binding<?>>) type.getRawType()).apply(provider);
+        if (bindingResolvers.containsKey(type.getRawType())) {
+            return bindingResolvers.get(type.getRawType()).apply(provider);
         } else {
             throw new ComponentCreationException(String.format("No known resolver for binding %s", type.getRawType()));
         }

@@ -1,8 +1,8 @@
-package com.w1sh.aperture.yaml;
+package com.w1sh.aperture.configuration;
 
 import java.io.InputStream;
 
-public interface YamlPropertiesRegistry {
+public interface PropertiesRegistry {
 
     void register(InputStream inputStream);
 

@@ -1,16 +1,15 @@
-package com.w1sh.aperture.yaml;
+package com.w1sh.aperture.configuration;
 
 import com.w1sh.aperture.InvocationInterceptor;
 import com.w1sh.aperture.annotation.Provide;
-
-import java.util.TreeMap;
+import com.w1sh.aperture.configuration.PropertiesRegistry;
 
 @Provide
 public class YamlPostConstructInterceptor implements InvocationInterceptor {
 
-    private final YamlPropertiesRegistry yamlPropertiesRegistry;
+    private final PropertiesRegistry yamlPropertiesRegistry;
 
-    public YamlPostConstructInterceptor(YamlPropertiesRegistry yamlPropertiesRegistry) {
+    public YamlPostConstructInterceptor(PropertiesRegistry yamlPropertiesRegistry) {
         this.yamlPropertiesRegistry = yamlPropertiesRegistry;
     }
 

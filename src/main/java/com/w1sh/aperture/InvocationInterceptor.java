@@ -1,10 +1,12 @@
 package com.w1sh.aperture;
 
+import com.w1sh.aperture.configuration.YamlPostConstructInterceptor;
+
 /**
  * Interface to be implemented by invocation interceptors.
  *
  * @see JakartaPostConstructInterceptor
- * @see com.w1sh.aperture.yaml.YamlPostConstructInterceptor
+ * @see YamlPostConstructInterceptor
  * @see JakartaPreDestroyInterceptor
  */
 public interface InvocationInterceptor {

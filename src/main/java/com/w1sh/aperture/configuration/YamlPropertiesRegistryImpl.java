@@ -1,4 +1,4 @@
-package com.w1sh.aperture.yaml;
+package com.w1sh.aperture.configuration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class YamlPropertiesRegistryImpl implements YamlPropertiesRegistry {
+public class YamlPropertiesRegistryImpl implements PropertiesRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(YamlPropertiesRegistryImpl.class);
     private final Map<String, Object> properties = new ConcurrentHashMap<>(256);

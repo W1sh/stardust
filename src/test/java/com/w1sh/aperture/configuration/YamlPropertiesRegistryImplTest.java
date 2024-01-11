@@ -1,4 +1,4 @@
-package com.w1sh.aperture.yaml;
+package com.w1sh.aperture.configuration;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class YamlPropertiesRegistryImplTest {
 
-    private final YamlPropertiesRegistry yamlPropertiesRegistry = new YamlPropertiesRegistryImpl();
+    private final PropertiesRegistry yamlPropertiesRegistry = new YamlPropertiesRegistryImpl();
 
     @Test
     void should_returnKeyValue_whenKeyIsPresentInYamlFile() {

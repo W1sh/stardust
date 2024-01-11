@@ -11,7 +11,7 @@ class PropertiesRegistryImplTest {
     private final PropertiesRegistry registry = new PropertiesRegistryImpl();
 
     @Test
-    void should_returnKeyValue_whenKeyIsPresentInYamlFile() {
+    void should_returnKeyValue_whenKeyIsPresentInPropertiesFile() {
         InputStream file = this.getClass().getResourceAsStream("/application.properties");
         registry.register(file);
         String nameProperty = registry.getProperty("application.name");
@@ -21,7 +21,7 @@ class PropertiesRegistryImplTest {
     }
 
     @Test
-    void should_returnNull_whenKeyIsNotPresentInYamlFile() {
+    void should_returnNull_whenKeyIsNotPresentInPropertiesFile() {
         InputStream file = this.getClass().getResourceAsStream("/application.properties");
         registry.register(file);
         String nameProperty = registry.getProperty("application.version");

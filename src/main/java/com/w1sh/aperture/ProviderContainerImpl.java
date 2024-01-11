@@ -4,6 +4,10 @@ import com.w1sh.aperture.InvocationInterceptor.InvocationType;
 import com.w1sh.aperture.annotation.Module;
 import com.w1sh.aperture.annotation.Primary;
 import com.w1sh.aperture.annotation.Provide;
+import com.w1sh.aperture.binding.Lazy;
+import com.w1sh.aperture.binding.LazyBinding;
+import com.w1sh.aperture.binding.Provider;
+import com.w1sh.aperture.binding.ProviderBinding;
 import com.w1sh.aperture.exception.ProviderCandidatesException;
 import com.w1sh.aperture.exception.ProviderRegistrationException;
 import com.w1sh.aperture.naming.DefaultNamingStrategy;
@@ -40,6 +44,8 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
     public ProviderContainerImpl(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         this.resolver = new ParameterResolver(this);
+        this.resolver.addBindingResolver(Lazy.class, LazyBinding::of);
+        this.resolver.addBindingResolver(Provider.class, ProviderBinding::of);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
 
         final var provider = new SingletonObjectProvider<>(this);

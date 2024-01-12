@@ -17,11 +17,17 @@ public class ModuleInspector {
     private ModuleInspector() {
     }
 
-    public static List<Class<?>> findAllInternalSubclassesOf(Class<?> clazz) {
-        return ModuleInspector.find(MODULE_NAME)
+    public static List<Class<?>> findAllSubclassesOf(String module, Class<?> clazz) {
+        return ModuleInspector.find(module)
                 .stream()
                 .filter(clazz::isAssignableFrom)
                 .filter(aClass -> !aClass.equals(clazz))
+                .toList();
+    }
+
+    public static List<Class<?>> findAllSubclassesOf(Set<Class<?>> modules, Class<?> clazz) {
+        return modules.stream().map(m -> findAllSubclassesOf(m.getModule().getName(), clazz))
+                .flatMap(Collection::stream)
                 .toList();
     }
 

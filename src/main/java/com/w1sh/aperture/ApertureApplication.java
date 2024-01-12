@@ -8,7 +8,10 @@ import com.w1sh.aperture.dependency.Resolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ApertureApplication {
 
@@ -35,7 +38,11 @@ public class ApertureApplication {
     }
 
     public void run(String... args) {
-        ApertureApplicationInitializer initializer = new ApertureApplicationInitializer();
+        if (configuration == null) {
+            logger.debug("No configuration found, using default configuration.");
+            configuration = ApertureConfiguration.base();
+        }
+        ApertureApplicationInitializer initializer = new ApertureApplicationInitializer(configuration.getRegistry());
         initializer.registerInternals();
         initializer.initialize(sources);
     }
@@ -46,30 +53,44 @@ public class ApertureApplication {
         private final ProviderContainer container;
         private final Environment environment;
 
-        ApertureApplicationInitializer() {
-            this.container = new ProviderContainerImpl();
+        ApertureApplicationInitializer(ProviderContainer container) {
+            this.container = container;
             this.resolvers = new SetValueEnumMap<>(EvaluationPhase.class);
             this.environment = new Environment(container, new HashSet<>());
         }
 
-        public void registerInternals(){
+        public void registerInternals() {
             logger.debug("Registering aperture internal classes");
-            List<Class<?>> internalClasses = ModuleInspector.findAllAnnotatedBy(this.getClass().getModule().getName(), Provide.class);
+            List<Class<?>> internalClasses = ModuleInspector.findAllAnnotatedBy(ModuleInspector.MODULE_NAME, Provide.class);
             logger.debug("Found {} aperture internal classes to be registered", internalClasses.size());
             internalClasses.forEach(container::register);
+
+            // save resolvers for later processing
+            container.instances(DependencyResolver.class).forEach(dependencyResolver -> resolvers.put(dependencyResolver.getEvaluationPhase(), dependencyResolver));
+
+            // register interceptors in interceptor aware classes
+            List<InterceptorAware> interceptorAwareClasses = container.instances(InterceptorAware.class);
+            logger.debug("Found {} interceptor aware classes", interceptorAwareClasses.size());
+
+            logger.debug("Registering invocation interceptors for post processing");
+            List<InvocationInterceptor> internalInterceptors = container.instances(InvocationInterceptor.class);
+            logger.debug("Found {} invocation interceptors", internalInterceptors.size());
+
+            internalInterceptors.forEach(invocationInterceptor -> interceptorAwareClasses
+                    .forEach(interceptorAware -> interceptorAware.addInterceptor(invocationInterceptor)));
         }
 
         public void initialize(Set<Class<?>> sources) {
-            List<Class<?>> classesToRegister = new ArrayList<>();
-            for (Class<?> clazz : sources.stream()
-                    .map(source -> ModuleInspector.findAllAnnotatedBy(source.getModule().getName(), Provide.class))
-                    .flatMap(Collection::stream)
-                    .toList()) {
+            List<Class<?>> registrationReadyClasses = new ArrayList<>();
+            List<Class<?>> allClassPendingRegistration = ModuleInspector.findAllSubclassesOf(sources, Provide.class);
+
+            allClassPendingRegistration.forEach(clazz -> {
                 if (!dependenciesMatchForPhase(clazz, EvaluationPhase.BEFORE_REGISTRATION)) {
                     logger.debug("Skipping registration of class {} as conditionals did not match", clazz.getSimpleName());
                 }
-                classesToRegister.add(clazz);
-            }
+                registrationReadyClasses.add(clazz);
+            });
+            registrationReadyClasses.forEach(container::register);
         }
 
         private boolean dependenciesMatchForPhase(Class<?> clazz, EvaluationPhase phase) {

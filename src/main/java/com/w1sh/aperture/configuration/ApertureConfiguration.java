@@ -1,20 +1,24 @@
 package com.w1sh.aperture.configuration;
 
-import com.w1sh.aperture.*;
+import com.w1sh.aperture.ApertureApplication;
+import com.w1sh.aperture.ProviderContainer;
+import com.w1sh.aperture.ProviderContainerImpl;
+import com.w1sh.aperture.naming.DefaultNamingStrategy;
 import com.w1sh.aperture.naming.NamingStrategy;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ApertureConfiguration {
 
-    private final List<InvocationInterceptor> interceptors;
     private ProviderContainer registry;
     private NamingStrategy namingStrategy;
     private ProviderContainer.OverrideStrategy overrideStrategy;
 
-    public ApertureConfiguration() {
-        this.interceptors = new ArrayList<>(16);
+    public ApertureConfiguration() {}
+
+    public static ApertureConfiguration base() {
+        return new ApertureConfiguration()
+                .withRegistry(new ProviderContainerImpl())
+                .withNamingStrategy(new DefaultNamingStrategy())
+                .allowProviderOverriding(true);
     }
 
     public ApertureConfiguration withRegistry(ProviderContainer registry) {
@@ -39,17 +43,6 @@ public class ApertureConfiguration {
         return this;
     }
 
-    public ApertureConfiguration withInterceptors(InvocationInterceptor... interceptors) {
-        return withInterceptorsIf(true, interceptors);
-    }
-
-    public ApertureConfiguration withInterceptorsIf(boolean predicate, InvocationInterceptor... interceptors) {
-        if (predicate) {
-            this.interceptors.addAll(List.of(interceptors));
-        }
-        return this;
-    }
-
     public ApertureConfiguration allowProviderOverriding(boolean value) {
         return allowProviderOverridingIf(true, value);
     }
@@ -63,5 +56,17 @@ public class ApertureConfiguration {
 
     public void run(Class<?> primarySource, String... args) {
         new ApertureApplication(this, primarySource).run(args);
+    }
+
+    public ProviderContainer getRegistry() {
+        return registry;
+    }
+
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
+    }
+
+    public ProviderContainer.OverrideStrategy getOverrideStrategy() {
+        return overrideStrategy;
     }
 }

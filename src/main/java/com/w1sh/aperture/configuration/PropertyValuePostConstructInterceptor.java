@@ -3,6 +3,7 @@ package com.w1sh.aperture.configuration;
 import com.w1sh.aperture.InvocationInterceptor;
 import com.w1sh.aperture.annotation.Property;
 import com.w1sh.aperture.annotation.Provide;
+import com.w1sh.aperture.annotation.Required;
 import com.w1sh.aperture.exception.PropertyValueSettingException;
 
 import java.lang.reflect.Field;
@@ -23,12 +24,15 @@ public class PropertyValuePostConstructInterceptor implements InvocationIntercep
                 if (field.isAnnotationPresent(Property.class)) {
                     String property = field.getAnnotation(Property.class).value();
                     String propertyValue = registry.getProperty(property);
+                    if (propertyValue == null && field.isAnnotationPresent(Required.class)) {
+                        throw new PropertyValueSettingException("Failed to set value to property marked as required, property is not present.");
+                    }
                     field.setAccessible(true);
                     field.set(instance, propertyValue);
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new PropertyValueSettingException("Failed to set property value", e);
+            throw new PropertyValueSettingException("Failed to set property value.", e);
         }
     }
 

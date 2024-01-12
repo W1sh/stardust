@@ -28,7 +28,7 @@ public class JakartaPostConstructInterceptor implements InvocationInterceptor {
                 }
             }
         }
-        logger.debug("Found {} post construct methods to invoke on class {}", postConstructMethods.size(), instance.getClass());
+        logger.debug("Found {} post construct methods to invoke on {}", postConstructMethods.size(), instance.getClass());
         for (Method m : postConstructMethods) {
             try {
                 m.invoke(instance);

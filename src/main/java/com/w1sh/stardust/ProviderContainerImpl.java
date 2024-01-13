@@ -4,10 +4,8 @@ import com.w1sh.stardust.InvocationInterceptor.InvocationType;
 import com.w1sh.stardust.annotation.Module;
 import com.w1sh.stardust.annotation.Primary;
 import com.w1sh.stardust.annotation.Provide;
-import com.w1sh.stardust.binding.Lazy;
-import com.w1sh.stardust.binding.LazyBinding;
-import com.w1sh.stardust.binding.Provider;
-import com.w1sh.stardust.binding.ProviderBinding;
+import com.w1sh.stardust.configuration.PropertyValuePostConstructInterceptor;
+import com.w1sh.stardust.dependency.*;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
 import com.w1sh.stardust.exception.ProviderRegistrationException;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
@@ -44,13 +42,15 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
     public ProviderContainerImpl(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         this.resolver = new ParameterResolver(this);
-        this.resolver.addBindingResolver(Lazy.class, LazyBinding::of);
-        this.resolver.addBindingResolver(Provider.class, ProviderBinding::of);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
 
         final var provider = new SingletonObjectProvider<>(this);
         providers.put(ProviderContainerImpl.class, provider);
         named.put(namingStrategy.generate(this.getClass()), provider);
+
+        internalInterceptors().forEach(this::register);
+        internalResolvers().forEach(this::register);
+        logger.debug("Registry initialization complete. {} internal classes have been registered.", providers.size());
     }
 
     public void register(Class<?> clazz) {
@@ -239,5 +239,15 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
     @Override
     public void removeAllInterceptors() {
         interceptors.getUnderlyingEnumMap().clear();
+    }
+
+    private List<Class<? extends InvocationInterceptor>> internalInterceptors() {
+        return List.of(JakartaPostConstructInterceptor.class, JakartaPreDestroyInterceptor.class,
+                PropertyValuePostConstructInterceptor.class, SetterInjectionPostConstructInterceptor.class);
+    }
+
+    private List<Class<? extends DependencyResolver>> internalResolvers() {
+        return List.of(ActiveProfileDependencyResolver.class, ClassDependencyResolver.class,
+                MissingClassDependencyResolver.class, SystemPropertyDependencyResolver.class);
     }
 }

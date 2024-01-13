@@ -1,6 +1,6 @@
 package com.w1sh.stardust;
 
-import com.w1sh.stardust.binding.Binding;
+import com.w1sh.stardust.binding.*;
 import com.w1sh.stardust.exception.ComponentCreationException;
 import com.w1sh.stardust.exception.ProviderInitializationException;
 
@@ -17,6 +17,8 @@ public class ParameterResolver {
 
     public ParameterResolver(ProviderContainer container) {
         this.container = container;
+        this.addBindingResolver(Lazy.class, LazyBinding::of);
+        this.addBindingResolver(Provider.class, ProviderBinding::of);
     }
 
     public <T extends Binding<?>> void addBindingResolver(Class<T> bindingClass, Function<ObjectProvider<?>, T> bindingResolver) {

@@ -1,7 +1,6 @@
 package com.w1sh.stardust;
 
 import com.w1sh.stardust.annotation.Inject;
-import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.exception.PostConstructInvocationException;
 
 import javax.annotation.Priority;
@@ -9,12 +8,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-@Provide
 @Priority(999)
 public class SetterInjectionPostConstructInterceptor implements InvocationInterceptor {
 
     private final ParameterResolver resolver;
 
+    @Inject
     public SetterInjectionPostConstructInterceptor(ParameterResolver resolver) {this.resolver = resolver;}
 
     @Override

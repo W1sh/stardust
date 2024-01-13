@@ -1,6 +1,5 @@
 package com.w1sh.stardust;
 
-import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.exception.PostConstructInvocationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,6 @@ import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.LinkedList;
 
-@Provide
 @Priority(998)
 public class JakartaPostConstructInterceptor implements InvocationInterceptor {
 

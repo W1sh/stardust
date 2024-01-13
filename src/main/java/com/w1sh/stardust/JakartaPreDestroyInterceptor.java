@@ -1,8 +1,5 @@
 package com.w1sh.stardust;
 
-import com.w1sh.stardust.annotation.Provide;
-
-@Provide
 public class JakartaPreDestroyInterceptor implements InvocationInterceptor {
 
     @Override

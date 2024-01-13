@@ -1,6 +1,7 @@
 package com.w1sh.stardust.configuration;
 
 import com.w1sh.stardust.InvocationInterceptor;
+import com.w1sh.stardust.annotation.Inject;
 import com.w1sh.stardust.annotation.Property;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.annotation.Required;
@@ -13,6 +14,7 @@ public class PropertyValuePostConstructInterceptor implements InvocationIntercep
 
     private final PropertiesRegistry registry;
 
+    @Inject
     public PropertyValuePostConstructInterceptor(PropertiesRegistry registry) {
         this.registry = registry;
     }

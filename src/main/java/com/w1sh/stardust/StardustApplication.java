@@ -43,7 +43,6 @@ public class StardustApplication {
             configuration = StardustConfiguration.base();
         }
         StardustApplicationInitializer initializer = new StardustApplicationInitializer(configuration.getRegistry());
-        initializer.registerInternals();
         initializer.initialize(sources);
     }
 
@@ -59,30 +58,9 @@ public class StardustApplication {
             this.environment = new Environment(container, new HashSet<>());
         }
 
-        public void registerInternals() {
-            logger.debug("Registering stardust internal classes");
-            List<Class<?>> internalClasses = ModuleInspector.findAllAnnotatedBy(ModuleInspector.MODULE_NAME, Provide.class);
-            logger.debug("Found {} stardust internal classes to be registered", internalClasses.size());
-            internalClasses.forEach(container::register);
-
-            // save resolvers for later processing
-            container.instances(DependencyResolver.class).forEach(dependencyResolver -> resolvers.put(dependencyResolver.getEvaluationPhase(), dependencyResolver));
-
-            // register interceptors in interceptor aware classes
-            List<InterceptorAware> interceptorAwareClasses = container.instances(InterceptorAware.class);
-            logger.debug("Found {} interceptor aware classes", interceptorAwareClasses.size());
-
-            logger.debug("Registering invocation interceptors for post processing");
-            List<InvocationInterceptor> internalInterceptors = container.instances(InvocationInterceptor.class);
-            logger.debug("Found {} invocation interceptors", internalInterceptors.size());
-
-            internalInterceptors.forEach(invocationInterceptor -> interceptorAwareClasses
-                    .forEach(interceptorAware -> interceptorAware.addInterceptor(invocationInterceptor)));
-        }
-
         public void initialize(Set<Class<?>> sources) {
             List<Class<?>> registrationReadyClasses = new ArrayList<>();
-            List<Class<?>> allClassPendingRegistration = ModuleInspector.findAllSubclassesOf(sources, Provide.class);
+            List<Class<?>> allClassPendingRegistration = Inspector.findAllSubclassesOf(sources, Provide.class);
 
             allClassPendingRegistration.forEach(clazz -> {
                 if (!dependenciesMatchForPhase(clazz, EvaluationPhase.BEFORE_REGISTRATION)) {

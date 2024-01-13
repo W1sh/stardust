@@ -1,12 +1,9 @@
 package com.w1sh.stardust;
 
-import com.w1sh.stardust.configuration.PropertyValuePostConstructInterceptor;
-
 /**
  * Interface to be implemented by invocation interceptors.
  *
  * @see JakartaPostConstructInterceptor
- * @see PropertyValuePostConstructInterceptor
  * @see JakartaPreDestroyInterceptor
  */
 public interface InvocationInterceptor {

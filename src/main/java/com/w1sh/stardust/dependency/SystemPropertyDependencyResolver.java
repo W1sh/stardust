@@ -1,9 +1,7 @@
 package com.w1sh.stardust.dependency;
 
 import com.w1sh.stardust.Environment;
-import com.w1sh.stardust.annotation.Provide;
 
-@Provide
 public class SystemPropertyDependencyResolver implements DependencyResolver {
 
     @Override

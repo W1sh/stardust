@@ -248,6 +248,7 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
 
     private List<Class<? extends DependencyResolver>> internalResolvers() {
         return List.of(ActiveProfileDependencyResolver.class, ClassDependencyResolver.class,
-                MissingClassDependencyResolver.class, SystemPropertyDependencyResolver.class);
+                MissingClassDependencyResolver.class, SystemPropertyDependencyResolver.class,
+                PropertyDependencyResolver.class);
     }
 }

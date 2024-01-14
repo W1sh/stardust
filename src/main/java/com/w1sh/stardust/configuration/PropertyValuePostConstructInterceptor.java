@@ -9,7 +9,6 @@ import com.w1sh.stardust.exception.PropertyValueSettingException;
 
 import java.lang.reflect.Field;
 
-@Provide
 public class PropertyValuePostConstructInterceptor implements InvocationInterceptor {
 
     private final PropertiesRegistry registry;

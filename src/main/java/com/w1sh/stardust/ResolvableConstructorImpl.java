@@ -79,15 +79,13 @@ public class ResolvableConstructorImpl<S> implements ResolvableExecutable<S> {
     @Override
     public Scope getScope() {
         Provide annotation = getAnnotation(Provide.class);
-        Objects.requireNonNull(annotation);
-        return annotation.scope();
+        return annotation != null ? annotation.scope() : Scope.SINGLETON;
     }
 
     @Override
     public String getName() {
         Provide annotation = getAnnotation(Provide.class);
-        Objects.requireNonNull(annotation);
-        return !annotation.value().isBlank() ? annotation.value() : null;
+        return (annotation != null && !annotation.value().isBlank()) ? annotation.value() : null;
     }
 
     @Override

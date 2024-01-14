@@ -1,10 +1,12 @@
 package com.w1sh.stardust.configuration;
 
-import java.io.InputStream;
+import java.util.Map;
 
 public interface PropertiesRegistry {
 
-    void register(InputStream inputStream);
+    void set(Map<String, String> properties);
 
     String getProperty(String key);
+
+    String getProperty(String key, String defaultValue);
 }

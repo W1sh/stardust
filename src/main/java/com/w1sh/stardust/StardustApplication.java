@@ -5,9 +5,12 @@ import com.w1sh.stardust.configuration.StardustConfiguration;
 import com.w1sh.stardust.dependency.DependencyResolver;
 import com.w1sh.stardust.dependency.DependencyResolver.EvaluationPhase;
 import com.w1sh.stardust.dependency.Resolver;
+import com.w1sh.stardust.exception.ComponentCreationException;
+import com.w1sh.stardust.naming.NamingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +45,7 @@ public class StardustApplication {
             logger.debug("No configuration found, using default configuration.");
             configuration = StardustConfiguration.base();
         }
-        StardustApplicationInitializer initializer = new StardustApplicationInitializer(configuration.getRegistry());
+        StardustApplicationInitializer initializer = new StardustApplicationInitializer(configuration);
         initializer.initialize(sources);
     }
 
@@ -52,10 +55,18 @@ public class StardustApplication {
         private final ProviderContainer container;
         private final Environment environment;
 
-        StardustApplicationInitializer(ProviderContainer container) {
-            this.container = container;
+        StardustApplicationInitializer(StardustConfiguration configuration) {
+            try {
+                NamingStrategy namingStrategy = configuration.getNamingStrategy().getConstructor().newInstance();
+                this.container = configuration.getRegistry().getConstructor(NamingStrategy.class).newInstance(namingStrategy);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new ComponentCreationException("Failed to create provider container", e);
+            }
             this.resolvers = new SetValueEnumMap<>(EvaluationPhase.class);
             this.environment = new Environment(container, new HashSet<>());
+
+            container.register(configuration.getPropertiesRegistry());
         }
 
         public void initialize(Set<Class<?>> sources) {

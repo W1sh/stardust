@@ -5,13 +5,12 @@ import com.w1sh.stardust.annotation.Primary;
 import com.w1sh.stardust.annotation.Profile;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.example.controller.CalculatorController;
-import com.w1sh.stardust.example.controller.impl.BindingDependantControllerImpl;
-import com.w1sh.stardust.example.controller.impl.CalculatorControllerImpl;
-import com.w1sh.stardust.example.controller.impl.EmptyCalculatorControllerImpl;
-import com.w1sh.stardust.example.controller.impl.PrimaryControllerImpl;
+import com.w1sh.stardust.example.controller.impl.*;
 import com.w1sh.stardust.example.service.CalculatorService;
+import com.w1sh.stardust.example.service.MerchantService;
 import com.w1sh.stardust.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.DuplicateCalculatorServiceImpl;
+import com.w1sh.stardust.example.service.impl.MerchantServiceImpl;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
 import com.w1sh.stardust.exception.ProviderRegistrationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,13 +20,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProviderContainerImplTest {
+class AbstractProviderContainerTest {
 
-    private ProviderContainerImpl registry;
+    private AbstractProviderContainer registry;
 
     @BeforeEach
     void setUp() {
-        registry = new ProviderContainerImpl();
+        registry = AbstractProviderContainer.base();
     }
 
     @Test
@@ -226,6 +225,18 @@ class ProviderContainerImplTest {
         assertFalse(contains);
     }
 
+    @Test
+    void should_returnInstance_whenRegisteredViaModuleAndDependsOnInstanceFromSameModule() {
+        registry.register(ModuleTestingClass.class);
+
+        MerchantService service = registry.instance(MerchantService.class);
+        RequiredDependantControllerImpl controller = (RequiredDependantControllerImpl) registry.instance(CalculatorController.class);
+
+        assertNotNull(service);
+        assertNotNull(controller);
+        assertNotNull(controller.getMerchantService());
+    }
+
     @Module
     private static class AnnotatedClass {
 
@@ -240,6 +251,22 @@ class ProviderContainerImplTest {
 
         public CalculatorService service() {
             return new CalculatorServiceImpl();
+        }
+    }
+
+    @Module
+    private static class ModuleTestingClass {
+
+        public ModuleTestingClass() {}
+
+        @Provide
+        public MerchantService service() {
+            return new MerchantServiceImpl();
+        }
+
+        @Provide
+        public CalculatorController controller(MerchantService merchantService) {
+            return new RequiredDependantControllerImpl(merchantService);
         }
     }
 }

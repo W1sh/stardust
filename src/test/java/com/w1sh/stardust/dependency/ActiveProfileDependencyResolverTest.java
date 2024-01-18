@@ -1,7 +1,7 @@
 package com.w1sh.stardust.dependency;
 
 import com.w1sh.stardust.Environment;
-import com.w1sh.stardust.ProviderContainerImpl;
+import com.w1sh.stardust.AbstractProviderContainer;
 import com.w1sh.stardust.annotation.Profile;
 import com.w1sh.stardust.annotation.Provide;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +19,7 @@ class ActiveProfileDependencyResolverTest {
 
     @BeforeEach
     void setUp() {
-        environment = new Environment(new ProviderContainerImpl(), Set.of("test"));
+        environment = new Environment(AbstractProviderContainer.base(), Set.of("test"));
         resolver = new ActiveProfileDependencyResolver();
     }
 

@@ -23,12 +23,12 @@ import static org.mockito.Mockito.*;
 
 class ParameterResolverTest {
 
-    private ProviderContainerImpl container;
+    private AbstractProviderContainer container;
     private ParameterResolver resolver;
 
     @BeforeEach
     void setUp() {
-        container = spy(new ProviderContainerImpl());
+        container = spy(AbstractProviderContainer.base());
         resolver = new ParameterResolver(container);
         resolver.addBindingResolver(Lazy.class, LazyBinding::of);
         resolver.addBindingResolver(Provider.class, ProviderBinding::of);

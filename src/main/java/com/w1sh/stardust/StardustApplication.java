@@ -1,10 +1,10 @@
 package com.w1sh.stardust;
 
 import com.w1sh.stardust.annotation.Provide;
+import com.w1sh.stardust.configuration.PropertyValuePostConstructInterceptor;
 import com.w1sh.stardust.configuration.StardustConfiguration;
-import com.w1sh.stardust.dependency.DependencyResolver;
+import com.w1sh.stardust.dependency.*;
 import com.w1sh.stardust.dependency.DependencyResolver.EvaluationPhase;
-import com.w1sh.stardust.dependency.Resolver;
 import com.w1sh.stardust.exception.ComponentCreationException;
 import com.w1sh.stardust.naming.NamingStrategy;
 import org.slf4j.Logger;
@@ -66,6 +66,8 @@ public class StardustApplication {
             this.resolvers = new SetValueEnumMap<>(EvaluationPhase.class);
             this.environment = new Environment(container, new HashSet<>());
 
+            internalInterceptors().forEach(container::register);
+            internalResolvers().forEach(container::register);
             container.register(configuration.getPropertiesRegistry());
         }
 
@@ -96,6 +98,18 @@ public class StardustApplication {
                 }
             }
             return true;
+        }
+
+
+        private List<Class<? extends InvocationInterceptor>> internalInterceptors() {
+            return List.of(JakartaPostConstructInterceptor.class, JakartaPreDestroyInterceptor.class,
+                    PropertyValuePostConstructInterceptor.class, SetterInjectionPostConstructInterceptor.class);
+        }
+
+        private List<Class<? extends DependencyResolver>> internalResolvers() {
+            return List.of(ActiveProfileDependencyResolver.class, ClassDependencyResolver.class,
+                    MissingClassDependencyResolver.class, SystemPropertyDependencyResolver.class,
+                    PropertyDependencyResolver.class);
         }
     }
 }

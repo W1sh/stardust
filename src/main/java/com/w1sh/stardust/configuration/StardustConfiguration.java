@@ -1,7 +1,7 @@
 package com.w1sh.stardust.configuration;
 
 import com.w1sh.stardust.ProviderContainer;
-import com.w1sh.stardust.ProviderContainerImpl;
+import com.w1sh.stardust.AbstractProviderContainer;
 import com.w1sh.stardust.StardustApplication;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
 import com.w1sh.stardust.naming.NamingStrategy;
@@ -17,7 +17,7 @@ public class StardustConfiguration {
 
     public static StardustConfiguration base() {
         return new StardustConfiguration()
-                .withRegistry(ProviderContainerImpl.class)
+                .withRegistry(AbstractProviderContainer.class)
                 .withPropertiesRegistry(PropertiesRegistryImpl.class)
                 .withNamingStrategy(DefaultNamingStrategy.class)
                 .allowProviderOverriding(true);

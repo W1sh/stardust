@@ -4,8 +4,6 @@ import com.w1sh.stardust.InvocationInterceptor.InvocationType;
 import com.w1sh.stardust.annotation.Module;
 import com.w1sh.stardust.annotation.Primary;
 import com.w1sh.stardust.annotation.Provide;
-import com.w1sh.stardust.configuration.PropertyValuePostConstructInterceptor;
-import com.w1sh.stardust.dependency.*;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
 import com.w1sh.stardust.exception.ProviderRegistrationException;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
@@ -23,9 +21,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ProviderContainerImpl implements ProviderContainer, InterceptorAware {
+public abstract class AbstractProviderContainer implements ProviderContainer, InterceptorAware {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProviderContainerImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractProviderContainer.class);
 
     private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
     private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
@@ -35,22 +33,23 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
 
     private OverrideStrategy overrideStrategy = OverrideStrategy.ALLOWED;
 
-    public ProviderContainerImpl() {
-        this(new DefaultNamingStrategy());
-    }
-
-    public ProviderContainerImpl(NamingStrategy namingStrategy) {
+    protected AbstractProviderContainer(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         this.resolver = new ParameterResolver(this);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
 
         final var provider = new SingletonObjectProvider<>(this);
-        providers.put(ProviderContainerImpl.class, provider);
+        providers.put(AbstractProviderContainer.class, provider);
         named.put(namingStrategy.generate(this.getClass()), provider);
 
-        internalInterceptors().forEach(this::register);
-        internalResolvers().forEach(this::register);
+        providers.put(NamingStrategy.class, provider);
+        named.put(namingStrategy.generate(namingStrategy.getClass()), provider);
+
         logger.debug("Registry initialization complete. {} internal classes have been registered.", providers.size());
+    }
+
+    public static AbstractProviderContainer base() {
+        return new DefaultProviderContainer(new DefaultNamingStrategy());
     }
 
     public void register(Class<?> clazz) {
@@ -241,14 +240,10 @@ public class ProviderContainerImpl implements ProviderContainer, InterceptorAwar
         interceptors.getUnderlyingEnumMap().clear();
     }
 
-    private List<Class<? extends InvocationInterceptor>> internalInterceptors() {
-        return List.of(JakartaPostConstructInterceptor.class, JakartaPreDestroyInterceptor.class,
-                PropertyValuePostConstructInterceptor.class, SetterInjectionPostConstructInterceptor.class);
-    }
+    public static class DefaultProviderContainer extends AbstractProviderContainer {
 
-    private List<Class<? extends DependencyResolver>> internalResolvers() {
-        return List.of(ActiveProfileDependencyResolver.class, ClassDependencyResolver.class,
-                MissingClassDependencyResolver.class, SystemPropertyDependencyResolver.class,
-                PropertyDependencyResolver.class);
+        public DefaultProviderContainer(NamingStrategy namingStrategy) {
+            super(namingStrategy);
+        }
     }
 }

@@ -2,7 +2,7 @@ package com.w1sh.stardust.dependency;
 
 import com.w1sh.stardust.Environment;
 import com.w1sh.stardust.ProviderContainer;
-import com.w1sh.stardust.ProviderContainerImpl;
+import com.w1sh.stardust.AbstractProviderContainer;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.configuration.PropertiesRegistry;
 import com.w1sh.stardust.configuration.PropertiesRegistryImpl;
@@ -25,7 +25,7 @@ class PropertyDependencyResolverTest {
 
     @BeforeEach
     void setUp() {
-        container = spy(new ProviderContainerImpl());
+        container = spy(AbstractProviderContainer.base());
         environment = new Environment(container, Set.of("test"));
     }
 

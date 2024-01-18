@@ -2,7 +2,7 @@ package com.w1sh.stardust.dependency;
 
 import com.w1sh.stardust.Environment;
 import com.w1sh.stardust.ProviderContainer;
-import com.w1sh.stardust.ProviderContainerImpl;
+import com.w1sh.stardust.AbstractProviderContainer;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.example.controller.impl.PrimaryControllerImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ class ClassDependencyResolverTest {
 
     @BeforeEach
     void setUp() {
-        container = spy(new ProviderContainerImpl());
+        container = spy(AbstractProviderContainer.base());
         environment = new Environment(container, Set.of("test"));
         resolver = new ClassDependencyResolver();
     }

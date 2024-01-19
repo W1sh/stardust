@@ -16,6 +16,7 @@ import com.w1sh.stardust.exception.ProviderRegistrationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Priority;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -235,6 +236,47 @@ class AbstractProviderContainerTest {
         assertNotNull(service);
         assertNotNull(controller);
         assertNotNull(controller.getMerchantService());
+    }
+
+    @Test
+    void should_containInterceptor_whenInterceptorIsAdded() {
+        assertEquals(0, registry.getAllInterceptors().size());
+
+        registry.addInterceptor(new JakartaPostConstructInterceptor());
+
+        assertEquals(1, registry.getAllInterceptors().size());
+    }
+
+    @Test
+    void should_containNoInterceptor_whenInterceptorIsRemoved() {
+        JakartaPostConstructInterceptor interceptor = new JakartaPostConstructInterceptor();
+        registry.addInterceptor(interceptor);
+        assertEquals(1, registry.getAllInterceptors().size());
+
+        registry.removeInterceptor(interceptor);
+
+        assertEquals(0, registry.getAllInterceptors().size());
+    }
+
+    @Test
+    void should_containNoInterceptor_whenAllInterceptorsAreRemoved() {
+        registry.addInterceptor(new JakartaPostConstructInterceptor());
+        assertEquals(1, registry.getAllInterceptors().size());
+
+        registry.removeAllInterceptors();
+
+        assertEquals(0, registry.getAllInterceptors().size());
+    }
+
+    @Test
+    void should_returnAllInterceptorsOfGivenType() {
+        registry.addInterceptor(new JakartaPostConstructInterceptor());
+        assertEquals(1, registry.getAllInterceptors().size());
+
+        List<InvocationInterceptor> allInterceptorsOfType = registry.getAllInterceptorsOfType(InvocationInterceptor.InvocationType.POST_CONSTRUCT);
+
+        assertNotNull(allInterceptorsOfType);
+        assertEquals(1, allInterceptorsOfType.size());
     }
 
     @Module

@@ -14,11 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractProviderContainer implements ProviderContainer, InterceptorAware {
@@ -38,14 +34,19 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
         this.resolver = new ParameterResolver(this);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
 
-        final var provider = new SingletonObjectProvider<>(this);
-        providers.put(AbstractProviderContainer.class, provider);
-        named.put(namingStrategy.generate(this.getClass()), provider);
+        final var containerProvider = new SingletonObjectProvider<>(this);
+        providers.put(AbstractProviderContainer.class, containerProvider);
+        named.put(namingStrategy.generate(this.getClass()), containerProvider);
 
-        providers.put(NamingStrategy.class, provider);
-        named.put(namingStrategy.generate(namingStrategy.getClass()), provider);
+        final var namingStrategyProvider = new SingletonObjectProvider<>(this);
+        providers.put(NamingStrategy.class, namingStrategyProvider);
+        named.put(namingStrategy.generate(namingStrategy.getClass()), namingStrategyProvider);
 
-        logger.debug("Registry initialization complete. {} internal classes have been registered.", providers.size());
+        final var parameterResolverProvider = new SingletonObjectProvider<>(this);
+        providers.put(ParameterResolver.class, parameterResolverProvider);
+        named.put(namingStrategy.generate(namingStrategy.getClass()), parameterResolverProvider);
+
+        logger.trace("Container initialization complete. {} internal classes have been registered.", providers.size());
     }
 
     public static AbstractProviderContainer base() {
@@ -59,12 +60,11 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
 
         if (clazz.isAnnotationPresent(Module.class)) {
             Object moduleInstance = instance(clazz);
-            for (Method method : clazz.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(Provide.class)) {
-                    final var resolvableMethod = new ResolvableMethodImpl<>(method, moduleInstance);
-                    register(resolvableMethod);
-                }
-            }
+            Arrays.stream(clazz.getDeclaredMethods())
+                    .filter(method -> method.isAnnotationPresent(Provide.class))
+                    .map(method -> new ResolvableMethodImpl<>(method, moduleInstance))
+                    .sorted((Comparator.comparingInt(o -> o.getParameters().size())))
+                    .forEach(this::register);
         }
     }
 
@@ -238,6 +238,19 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     @Override
     public void removeAllInterceptors() {
         interceptors.getUnderlyingEnumMap().clear();
+    }
+
+    @Override
+    public List<InvocationInterceptor> getAllInterceptors() {
+        return interceptors.getUnderlyingEnumMap().values()
+                .stream()
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
+    @Override
+    public List<InvocationInterceptor> getAllInterceptorsOfType(InvocationType type) {
+        return List.copyOf(interceptors.get(type));
     }
 
     public static class DefaultProviderContainer extends AbstractProviderContainer {

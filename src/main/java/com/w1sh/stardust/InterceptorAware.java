@@ -1,5 +1,7 @@
 package com.w1sh.stardust;
 
+import java.util.List;
+
 public interface InterceptorAware {
 
     /**
@@ -22,4 +24,8 @@ public interface InterceptorAware {
      * Remove all {@link InvocationInterceptor interceptors} registered with this container.
      */
     void removeAllInterceptors();
+
+    List<InvocationInterceptor> getAllInterceptors();
+
+    List<InvocationInterceptor> getAllInterceptorsOfType(InvocationInterceptor.InvocationType type);
 }

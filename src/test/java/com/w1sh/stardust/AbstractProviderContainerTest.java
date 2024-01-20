@@ -16,7 +16,6 @@ import com.w1sh.stardust.exception.ProviderRegistrationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Priority;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -85,14 +84,6 @@ class AbstractProviderContainerTest {
         assertNotNull(classes);
         assertEquals(1, classes.size());
         assertEquals(CalculatorControllerImpl.class, classes.get(0));
-    }
-
-    @Test
-    void should_throwRegistrationException_whenTryingToRegisterClassTwiceButOverrideNotAllowed() {
-        registry.setOverrideStrategy(ProviderContainer.OverrideStrategy.NOT_ALLOWED);
-        registry.register(CalculatorControllerImpl.class);
-
-        assertThrows(ProviderRegistrationException.class, () -> registry.register(CalculatorControllerImpl.class));
     }
 
     @Test
@@ -190,11 +181,6 @@ class AbstractProviderContainerTest {
     @Test
     void should_throwNullPointerException_whenTryingToRetrievePrimaryProviderWithNullClass() {
         assertThrows(NullPointerException.class, () -> registry.primaryInstance(null));
-    }
-
-    @Test
-    void should_throwNullPointerException_whenTryingToSetNullOverrideStrategy() {
-        assertThrows(NullPointerException.class, () -> registry.setOverrideStrategy(null));
     }
 
     @Test

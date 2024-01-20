@@ -52,7 +52,7 @@ public class PropertiesRegistryImpl implements PropertiesRegistry {
                 logger.warn("Property with key {} and value {} is already present, value will be set to {}",
                         key, properties.get(key), value);
                 logger.warn("If you would like the framework to fail on these kind of scenarios, set the property \"stardust.properties.allow-override\" to false");
-                logger.warn("If you would like to ignore these kind of scenarios, set the property \"stardust.properties.ignore-override\" to true");
+                logger.warn("If you would like to ignore warnings on these kind of scenarios, set the property \"stardust.properties.ignore-override\" to true");
             }
         });
     }

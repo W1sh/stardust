@@ -5,7 +5,6 @@ import com.w1sh.stardust.annotation.Module;
 import com.w1sh.stardust.annotation.Primary;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
-import com.w1sh.stardust.exception.ProviderRegistrationException;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
 import com.w1sh.stardust.naming.NamingStrategy;
 import com.w1sh.stardust.util.Constructors;
@@ -15,38 +14,27 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractProviderContainer implements ProviderContainer, InterceptorAware {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractProviderContainer.class);
 
-    private final Map<Class<?>, ObjectProvider<?>> providers = new ConcurrentHashMap<>(256);
-    private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
     private final SetValueEnumMap<InvocationType, InvocationInterceptor> interceptors;
+    private final ProviderStore providerStore;
     private final NamingStrategy namingStrategy;
     private final ParameterResolver resolver;
 
-    private OverrideStrategy overrideStrategy = OverrideStrategy.ALLOWED;
-
     protected AbstractProviderContainer(NamingStrategy namingStrategy) {
-        this.namingStrategy = namingStrategy;
+        this.namingStrategy = Objects.requireNonNullElseGet(namingStrategy, DefaultNamingStrategy::new);
+        this.providerStore = new ProviderStoreImpl();
         this.resolver = new ParameterResolver(this);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
 
-        final var containerProvider = new SingletonObjectProvider<>(this);
-        providers.put(AbstractProviderContainer.class, containerProvider);
-        named.put(namingStrategy.generate(this.getClass()), containerProvider);
-
-        final var namingStrategyProvider = new SingletonObjectProvider<>(this);
-        providers.put(NamingStrategy.class, namingStrategyProvider);
-        named.put(namingStrategy.generate(namingStrategy.getClass()), namingStrategyProvider);
-
-        final var parameterResolverProvider = new SingletonObjectProvider<>(this);
-        providers.put(ParameterResolver.class, parameterResolverProvider);
-        named.put(namingStrategy.generate(namingStrategy.getClass()), parameterResolverProvider);
-
-        logger.trace("Container initialization complete. {} internal classes have been registered.", providers.size());
+        providerStore.register(namingStrategy.generate(this.getClass()), AbstractProviderContainer.class, new SingletonObjectProvider<>(this));
+        providerStore.register(namingStrategy.generate(namingStrategy.getClass()), NamingStrategy.class, new SingletonObjectProvider<>(namingStrategy));
+        providerStore.register(namingStrategy.generate(providerStore.getClass()), ProviderStore.class, new SingletonObjectProvider<>(providerStore));
+        providerStore.register(namingStrategy.generate(resolver.getClass()), ParameterResolver.class, new SingletonObjectProvider<>(resolver));
+        logger.trace("Container initialization complete. {} internal classes have been registered.", providerStore.count());
     }
 
     public static AbstractProviderContainer base() {
@@ -72,17 +60,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
         Objects.requireNonNull(executable);
         String name = Objects.requireNonNullElse(executable.getName(), namingStrategy.generate(executable.getActualType()));
         logger.debug("Registering provider of class {} with name {}", executable.getActualType().getSimpleName(), name);
-
-        if (OverrideStrategy.NOT_ALLOWED.equals(overrideStrategy) && providers.containsKey(executable.getActualType())) {
-            throw ProviderRegistrationException.notAllowedClass(executable.getActualType());
-        }
-        if (OverrideStrategy.NOT_ALLOWED.equals(overrideStrategy) && named.containsKey(name)) {
-            throw ProviderRegistrationException.notAllowedName(name);
-        }
-
-        ObjectProvider<?> objProvider = asProvider(executable);
-        providers.put(executable.getActualType(), objProvider);
-        named.put(name, objProvider);
+        providerStore.register(name, executable.getActualType(), asProvider(executable));
     }
 
     @Override
@@ -97,7 +75,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     @SuppressWarnings("unchecked")
     public <T> T instance(String name) {
         Objects.requireNonNull(name);
-        ObjectProvider<?> provider = named.get(name);
+        ObjectProvider<?> provider = providerStore.get(name);
         return provider != null ? (T) provider.singletonInstance() : null;
     }
 
@@ -111,10 +89,11 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> primaryProvider(Class<T> clazz) {
         Objects.requireNonNull(clazz);
-        List<? extends ObjectProvider<?>> primaries = providers.entrySet().stream()
-                .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
-                .filter(entry -> entry.getKey().isAnnotationPresent(Primary.class))
-                .map(Map.Entry::getValue)
+        List<? extends ObjectProvider<?>> primaries = providerStore.getAllClasses().stream()
+                .filter(clazz::isAssignableFrom)
+                .filter(key -> key.isAnnotationPresent(Primary.class))
+                .map(providerStore::get)
+                .flatMap(Collection::stream)
                 .toList();
 
         if (primaries.isEmpty()) {
@@ -128,10 +107,9 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> List<T> instances(Class<T> clazz) {
         Objects.requireNonNull(clazz);
-        return (List<T>) candidates(clazz).stream()
+        return providerStore.get(clazz).stream()
                 .map(ObjectProvider::singletonInstance)
                 .toList();
     }
@@ -143,22 +121,20 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> provider(String name) {
         Objects.requireNonNull(name);
-        return (ObjectProvider<T>) named.get(name);
+        return providerStore.get(name);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> List<ObjectProvider<T>> providers(Class<T> clazz) {
         Objects.requireNonNull(clazz);
-        return (List<ObjectProvider<T>>) candidates(clazz);
+        return providerStore.get(clazz);
     }
 
     @Override
     public <T> boolean contains(Class<T> clazz) {
-        return clazz != null && !candidates(clazz).isEmpty();
+        return clazz != null && !providerStore.get(clazz).isEmpty();
     }
 
     @Override
@@ -166,40 +142,21 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
         return name != null && provider(name) != null;
     }
 
-    @Override
-    public OverrideStrategy getOverrideStrategy() {
-        return overrideStrategy;
-    }
-
-    @Override
-    public void setOverrideStrategy(OverrideStrategy strategy) {
-        Objects.requireNonNull(strategy);
-        this.overrideStrategy = strategy;
-    }
-
     public List<Class<?>> getAllAnnotatedWith(Class<? extends Annotation> annotationType) {
         Objects.requireNonNull(annotationType);
-        return providers.keySet().stream()
+        return providerStore.getAllClasses().stream()
                 .filter(clazz -> clazz.isAnnotationPresent(annotationType))
                 .toList();
     }
 
-    @SuppressWarnings("unchecked")
     private <T> ObjectProvider<T> get(Class<T> clazz) {
-        final var candidates = candidates(clazz);
+        final var candidates = providerStore.get(clazz);
 
         if (candidates.size() > 1) {
             logger.error("Expected 1 candidate but found {} for class {}", candidates.size(), clazz.getSimpleName());
             throw new ProviderCandidatesException(candidates.size(), clazz);
         }
-        return candidates.isEmpty() ? null : (ObjectProvider<T>) candidates.get(0);
-    }
-
-    private <T> List<? extends ObjectProvider<?>> candidates(Class<T> clazz) {
-        return providers.entrySet().stream()
-                .filter(entry -> clazz.isAssignableFrom(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .toList();
+        return candidates.isEmpty() ? null : candidates.get(0);
     }
 
     @SuppressWarnings("unchecked")
@@ -214,12 +171,11 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
 
     @SuppressWarnings("unchecked")
     private <T> T createInstance(ResolvableExecutable<?> executable) {
-        final var postConstructInterceptors = interceptors.get(InvocationType.POST_CONSTRUCT);
         Object[] objects = executable.getParameters().stream()
                 .map(resolver::resolve)
                 .toArray();
         T resolved = (T) executable.resolve(objects);
-        postConstructInterceptors.stream()
+        interceptors.get(InvocationType.POST_CONSTRUCT).stream()
                 .sorted(Comparator.comparing(o -> Types.getPriority(o.getClass())))
                 .forEach(invocationInterceptor -> invocationInterceptor.intercept(resolved));
         return resolved;

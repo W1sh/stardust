@@ -1,7 +1,7 @@
 package com.w1sh.stardust.configuration;
 
-import com.w1sh.stardust.ProviderContainer;
 import com.w1sh.stardust.AbstractProviderContainer;
+import com.w1sh.stardust.ProviderContainer;
 import com.w1sh.stardust.StardustApplication;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
 import com.w1sh.stardust.naming.NamingStrategy;
@@ -11,7 +11,6 @@ public class StardustConfiguration {
     private Class<? extends ProviderContainer> registry;
     private Class<? extends PropertiesRegistry> propertiesRegistry;
     private Class<? extends NamingStrategy> namingStrategy;
-    private ProviderContainer.OverrideStrategy overrideStrategy;
 
     public StardustConfiguration() {}
 
@@ -19,8 +18,7 @@ public class StardustConfiguration {
         return new StardustConfiguration()
                 .withRegistry(AbstractProviderContainer.class)
                 .withPropertiesRegistry(PropertiesRegistryImpl.class)
-                .withNamingStrategy(DefaultNamingStrategy.class)
-                .allowProviderOverriding(true);
+                .withNamingStrategy(DefaultNamingStrategy.class);
     }
 
     public StardustConfiguration withRegistry(Class<? extends ProviderContainer> registry) {
@@ -56,17 +54,6 @@ public class StardustConfiguration {
         return this;
     }
 
-    public StardustConfiguration allowProviderOverriding(boolean value) {
-        return allowProviderOverridingIf(true, value);
-    }
-
-    public StardustConfiguration allowProviderOverridingIf(boolean predicate, boolean value) {
-        if (predicate) {
-            this.overrideStrategy = value ? ProviderContainer.OverrideStrategy.ALLOWED : ProviderContainer.OverrideStrategy.NOT_ALLOWED;
-        }
-        return this;
-    }
-
     public void run(Class<?> primarySource, String... args) {
         new StardustApplication(this, primarySource).run(args);
     }
@@ -81,9 +68,5 @@ public class StardustConfiguration {
 
     public Class<? extends NamingStrategy> getNamingStrategy() {
         return namingStrategy;
-    }
-
-    public ProviderContainer.OverrideStrategy getOverrideStrategy() {
-        return overrideStrategy;
     }
 }

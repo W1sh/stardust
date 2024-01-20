@@ -25,12 +25,4 @@ public interface ProviderContainer {
     <T> boolean contains(Class<T> clazz);
 
     boolean contains(String name);
-
-    OverrideStrategy getOverrideStrategy();
-
-    void setOverrideStrategy(OverrideStrategy strategy);
-
-    enum OverrideStrategy {
-        ALLOWED, NOT_ALLOWED
-    }
 }

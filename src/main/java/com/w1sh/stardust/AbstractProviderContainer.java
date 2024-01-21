@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-public abstract class AbstractProviderContainer implements ProviderContainer, InterceptorAware {
+public abstract class AbstractProviderContainer implements ProviderContainer, InterceptorAware, AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractProviderContainer.class);
 
@@ -207,6 +207,25 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     @Override
     public List<InvocationInterceptor> getAllInterceptorsOfType(InvocationType type) {
         return List.copyOf(interceptors.get(type));
+    }
+
+    @Override
+    public void close() throws Exception {
+        logger.debug("Closing provider container");
+        List<InvocationInterceptor> preDestroyInterceptors = interceptors.get(InvocationType.PRE_DESTROY).stream()
+                .sorted(Comparator.comparing(o -> Types.getPriority(o.getClass())))
+                .toList();
+        logger.debug("Invoking pre-destroy interceptors on all required providers");
+        List<ObjectProvider<?>> providers = providerStore.getAllOrdered();
+        Collections.reverse(providers);
+        for (ObjectProvider<?> objectProvider : providers) {
+            for (Object instance : objectProvider.instances()) {
+                for (InvocationInterceptor invocationInterceptor : preDestroyInterceptors) {
+                    invocationInterceptor.intercept(instance);
+                }
+            }
+        }
+        providerStore.clear();
     }
 
     public static class DefaultProviderContainer extends AbstractProviderContainer {

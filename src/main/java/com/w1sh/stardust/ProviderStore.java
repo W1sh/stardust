@@ -18,4 +18,6 @@ public interface ProviderStore {
     List<ObjectProvider<?>> getAllOrdered();
 
     Integer count();
+
+    void clear();
 }

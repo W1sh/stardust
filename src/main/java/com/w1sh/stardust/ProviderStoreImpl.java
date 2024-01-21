@@ -81,6 +81,14 @@ public class ProviderStoreImpl implements ProviderStore {
         return named.size();
     }
 
+    @Override
+    public void clear() {
+        logger.debug("Clearing all {} providers from store", named.size());
+        named.clear();
+        registrationOrder.clear();
+        classes.clear();
+    }
+
     public void setAllowOverride(boolean allowOverride) {
         this.allowOverride = allowOverride;
     }

@@ -27,7 +27,7 @@ public class CollectionDependantControllerImpl implements CalculatorController {
         this.merchantServicesArray = null;
     }
 
-    public CollectionDependantControllerImpl(MerchantService[] merchantServices) {
+    public CollectionDependantControllerImpl(@Introspect MerchantService[] merchantServices) {
         this.merchantServices = null;
         this.merchantServicesQueue = null;
         this.merchantServicesArray = merchantServices;

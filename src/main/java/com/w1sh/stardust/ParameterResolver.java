@@ -30,7 +30,7 @@ public class ParameterResolver {
         Objects.requireNonNull(parameter);
         if (Collection.class.isAssignableFrom(parameter.getActualType()) && parameter.isAnnotationPresent(Introspect.class)) {
             return resolveCollection(parameter);
-        } else if (parameter.getActualType().isArray()) {
+        } else if (parameter.getActualType().isArray() && parameter.isAnnotationPresent(Introspect.class)) {
             return resolveArrayType(parameter);
         } else if (Binding.class.isAssignableFrom(parameter.getActualType())) {
             return resolveParameterizedType(parameter);

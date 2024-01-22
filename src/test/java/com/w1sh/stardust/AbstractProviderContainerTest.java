@@ -225,6 +225,18 @@ class AbstractProviderContainerTest {
     }
 
     @Test
+    void should_returnArrayInstance_whenRegisteredArrayIsProviderViaModule() {
+        registry.register(ModuleTestingClass.class);
+
+        String[] arrayInstanceFromClass = registry.instance(String[].class);
+        String[] arrayInstanceFromName = registry.instance("values");
+
+        assertNotNull(arrayInstanceFromClass);
+        assertNotNull(arrayInstanceFromName);
+        assertEquals(arrayInstanceFromClass, arrayInstanceFromName);
+    }
+
+    @Test
     void should_returnListInstance_whenRegisteredListIsProviderViaModule() {
         registry.register(ModuleTestingClass.class);
 
@@ -319,6 +331,11 @@ class AbstractProviderContainerTest {
         @Provide
         public CalculatorController controller(MerchantService merchantService) {
             return new RequiredDependantControllerImpl(merchantService);
+        }
+
+        @Provide
+        public String[] values() {
+            return new String[]{"test1", "test2"};
         }
 
         @Provide

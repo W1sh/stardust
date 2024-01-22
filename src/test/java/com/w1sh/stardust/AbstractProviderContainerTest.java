@@ -12,11 +12,11 @@ import com.w1sh.stardust.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.DuplicateCalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.MerchantServiceImpl;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
-import com.w1sh.stardust.exception.ProviderRegistrationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -225,6 +225,30 @@ class AbstractProviderContainerTest {
     }
 
     @Test
+    void should_returnListInstance_whenRegisteredListIsProviderViaModule() {
+        registry.register(ModuleTestingClass.class);
+
+        List<?> listInstanceFromClass = registry.instance(List.class);
+        List<?> listInstanceFromName = registry.instance("services");
+
+        assertNotNull(listInstanceFromClass);
+        assertNotNull(listInstanceFromName);
+        assertEquals(listInstanceFromClass, listInstanceFromName);
+    }
+
+    @Test
+    void should_returnMapInstance_whenRegisteredMapIsProviderViaModule() {
+        registry.register(ModuleTestingClass.class);
+
+        Map<?, ?> mapInstanceFromClass = registry.instance(Map.class);
+        Map<?, ?> mapInstanceFromName = registry.instance("mappedServices");
+
+        assertNotNull(mapInstanceFromClass);
+        assertNotNull(mapInstanceFromName);
+        assertEquals(mapInstanceFromClass, mapInstanceFromName);
+    }
+
+    @Test
     void should_containInterceptor_whenInterceptorIsAdded() {
         assertEquals(0, registry.getAllInterceptors().size());
 
@@ -295,6 +319,16 @@ class AbstractProviderContainerTest {
         @Provide
         public CalculatorController controller(MerchantService merchantService) {
             return new RequiredDependantControllerImpl(merchantService);
+        }
+
+        @Provide
+        public List<String> services() {
+            return List.of("service1", "service2", "service3");
+        }
+
+        @Provide
+        public Map<String, Integer> mappedServices() {
+            return Map.of("service1", 1, "service2", 2);
         }
     }
 }

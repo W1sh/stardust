@@ -1,5 +1,6 @@
 package com.w1sh.stardust;
 
+import com.w1sh.stardust.annotation.Introspect;
 import com.w1sh.stardust.binding.*;
 import com.w1sh.stardust.exception.ComponentCreationException;
 import com.w1sh.stardust.exception.ProviderInitializationException;
@@ -27,7 +28,7 @@ public class ParameterResolver {
 
     public Object resolve(ResolvableParameter<?> parameter) {
         Objects.requireNonNull(parameter);
-        if (Collection.class.isAssignableFrom(parameter.getActualType())) {
+        if (Collection.class.isAssignableFrom(parameter.getActualType()) && parameter.isAnnotationPresent(Introspect.class)) {
             return resolveCollection(parameter);
         } else if (parameter.getActualType().isArray()) {
             return resolveArrayType(parameter);

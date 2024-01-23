@@ -9,4 +9,8 @@ import java.lang.annotation.*;
 public @interface Property {
 
     String value();
+
+    boolean isArray() default false;
+
+    String arraySeparator() default ",";
 }

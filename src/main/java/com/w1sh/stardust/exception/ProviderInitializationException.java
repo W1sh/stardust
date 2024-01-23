@@ -13,4 +13,8 @@ public class ProviderInitializationException extends RuntimeException {
     public static ProviderInitializationException required(String name) {
         return new ProviderInitializationException(String.format("No candidate found for required parameter %s", name));
     }
+
+    public static ProviderInitializationException invalidPropertyType() {
+        return new ProviderInitializationException("Cannot resolve property. Field annotated as property must be of type String.");
+    }
 }

@@ -4,6 +4,8 @@ import com.w1sh.stardust.InvocationInterceptor.InvocationType;
 import com.w1sh.stardust.annotation.Module;
 import com.w1sh.stardust.annotation.Primary;
 import com.w1sh.stardust.annotation.Provide;
+import com.w1sh.stardust.configuration.PropertiesRegistry;
+import com.w1sh.stardust.configuration.PropertiesRegistryImpl;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
 import com.w1sh.stardust.naming.NamingStrategy;
@@ -23,11 +25,13 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     private final ProviderStore providerStore;
     private final NamingStrategy namingStrategy;
     private final ParameterResolver resolver;
+    private final PropertiesRegistry registry;
 
     protected AbstractProviderContainer(NamingStrategy namingStrategy) {
         this.namingStrategy = Objects.requireNonNullElseGet(namingStrategy, DefaultNamingStrategy::new);
+        this.registry = new PropertiesRegistryImpl();
         this.providerStore = new ProviderStoreImpl();
-        this.resolver = new ParameterResolver(this);
+        this.resolver = new ParameterResolver(this, registry);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
 
         providerStore.register(namingStrategy.generate(this.getClass()), AbstractProviderContainer.class, new SingletonObjectProvider<>(this));

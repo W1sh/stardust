@@ -1,7 +1,10 @@
 package com.w1sh.stardust;
 
 import com.w1sh.stardust.binding.*;
+import com.w1sh.stardust.configuration.PropertiesRegistry;
+import com.w1sh.stardust.configuration.PropertiesRegistryImpl;
 import com.w1sh.stardust.example.CustomBinding;
+import com.w1sh.stardust.example.PropertyDependantService;
 import com.w1sh.stardust.example.controller.impl.BindingDependantControllerImpl;
 import com.w1sh.stardust.example.controller.impl.CollectionDependantControllerImpl;
 import com.w1sh.stardust.example.controller.impl.RequiredDependantControllerImpl;
@@ -24,12 +27,14 @@ import static org.mockito.Mockito.*;
 class ParameterResolverTest {
 
     private AbstractProviderContainer container;
+    private PropertiesRegistry registry;
     private ParameterResolver resolver;
 
     @BeforeEach
     void setUp() {
         container = spy(AbstractProviderContainer.base());
-        resolver = new ParameterResolver(container);
+        registry = spy(new PropertiesRegistryImpl());
+        resolver = new ParameterResolver(container, registry);
         resolver.addBindingResolver(Lazy.class, LazyBinding::of);
         resolver.addBindingResolver(Provider.class, ProviderBinding::of);
     }
@@ -172,5 +177,50 @@ class ParameterResolverTest {
         ResolvableParameter<?> parameter = (ResolvableParameter<?>) constructor.getParameters().toArray()[0];
 
         assertThrows(UnsupportedOperationException.class, () -> resolver.resolve(parameter));
+    }
+
+    @Test
+    void should_resolveProperty_whenParameterIsStringAndPropertyIsPresentInRegistry() {
+        final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+        when(registry.getProperty("test.value", "")).thenReturn("test");
+
+        Object resolved = resolver.resolve(constructor.getParameters().get(0));
+
+        assertNotNull(resolved);
+        assertEquals("test", resolved);
+    }
+
+    @Test
+    void should_resolvePropertyAsEmptyString_whenParameterIsStringAndPropertyIsNotPresentInRegistry() {
+        final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+
+        Object resolved = resolver.resolve(constructor.getParameters().get(0));
+
+        assertNotNull(resolved);
+        assertEquals("", resolved);
+    }
+
+    @Test
+    void should_resolveProperty_whenParameterIsStringArrayAndPropertyIsPresentInRegistry() {
+        final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+        when(registry.getProperty("test.value-array")).thenReturn("test1,test2,test3");
+
+        Object resolved = resolver.resolve(constructor.getParameters().get(1));
+
+        assertNotNull(resolved);
+        assertEquals("test1", ((String[]) resolved)[0]);
+        assertEquals("test2", ((String[]) resolved)[1]);
+        assertEquals("test3", ((String[]) resolved)[2]);
+    }
+
+    @Test
+    void should_throwProviderInitializationException_whenParameterIsNotString() {
+        final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+
+        assertThrows(ProviderInitializationException.class, () -> resolver.resolve(constructor.getParameters().get(2)));
     }
 }

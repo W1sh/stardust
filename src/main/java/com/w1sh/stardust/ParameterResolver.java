@@ -1,9 +1,13 @@
 package com.w1sh.stardust;
 
 import com.w1sh.stardust.annotation.Introspect;
+import com.w1sh.stardust.annotation.Property;
 import com.w1sh.stardust.binding.*;
+import com.w1sh.stardust.configuration.PropertiesRegistry;
 import com.w1sh.stardust.exception.ComponentCreationException;
 import com.w1sh.stardust.exception.ProviderInitializationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -13,11 +17,15 @@ import java.util.function.Function;
 
 public class ParameterResolver {
 
+    private static final Logger logger = LoggerFactory.getLogger(ParameterResolver.class);
+
     private static final Map<Type, Function<ObjectProvider<?>, ? extends Binding<?>>> bindingResolvers = new ConcurrentHashMap<>(8);
     private final ProviderContainer container;
+    private final PropertiesRegistry registry;
 
-    public ParameterResolver(ProviderContainer container) {
+    public ParameterResolver(ProviderContainer container, PropertiesRegistry registry) {
         this.container = container;
+        this.registry = registry;
         this.addBindingResolver(Lazy.class, LazyBinding::of);
         this.addBindingResolver(Provider.class, ProviderBinding::of);
     }
@@ -28,6 +36,17 @@ public class ParameterResolver {
 
     public Object resolve(ResolvableParameter<?> parameter) {
         Objects.requireNonNull(parameter);
+        if (parameter.isAnnotationPresent(Property.class)) {
+            if (parameter.getActualType().equals(String.class)) {
+                return registry.getProperty(parameter.getAnnotation(Property.class).value(), "");
+            }
+            if (parameter.getActualType().equals(String[].class) && parameter.getAnnotation(Property.class).isArray()) {
+                return resolveArrayProperty(parameter);
+            }
+            logger.error("Cannot resolve property as {}.", parameter.getActualType());
+            throw ProviderInitializationException.invalidPropertyType();
+        }
+
         if (Collection.class.isAssignableFrom(parameter.getActualType()) && parameter.isAnnotationPresent(Introspect.class)) {
             return resolveCollection(parameter);
         } else if (parameter.getActualType().isArray() && parameter.isAnnotationPresent(Introspect.class)) {
@@ -37,6 +56,12 @@ public class ParameterResolver {
         } else {
             return resolveObject(parameter);
         }
+    }
+
+    private Object resolveArrayProperty(ResolvableParameter<?> parameter) {
+        Property property = parameter.getAnnotation(Property.class);
+        String propertyValue = registry.getProperty(property.value());
+        return propertyValue.split(property.arraySeparator());
     }
 
     private Object resolveObject(ResolvableParameter<?> parameter) {

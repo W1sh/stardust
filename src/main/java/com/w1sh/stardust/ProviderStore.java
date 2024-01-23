@@ -13,11 +13,23 @@ public interface ProviderStore {
 
     Set<Class<?>> getAllClasses();
 
+    /**
+     * Returns all the {@link ObjectProvider} elements registered in this store.
+     *
+     * @return a list containing all {@link ObjectProvider} objects.
+     */
     List<ObjectProvider<?>> getAll();
 
-    List<ObjectProvider<?>> getAllOrdered();
-
+    /**
+     * Returns the amount of elements registered in this store. Will also count all the instances registered from
+     * {@link PrototypeObjectProvider}.
+     *
+     * @return the amount of elements registered in this store.
+     */
     Integer count();
 
+    /**
+     * Deletes all the elements from this store
+     */
     void clear();
 }

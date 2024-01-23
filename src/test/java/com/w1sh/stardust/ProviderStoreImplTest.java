@@ -55,13 +55,17 @@ class ProviderStoreImplTest {
 
     @Test
     void should_returnAllProvidersRegistered() {
-        store.register("duplicate", DuplicateCalculatorServiceImpl.class, new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl()));
-        store.register("merchant", MerchantService.class, new SingletonObjectProvider<>(new MerchantServiceImpl()));
+        SingletonObjectProvider<DuplicateCalculatorServiceImpl> duplicateCalculatorServiceSingletonObjectProvider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
+        SingletonObjectProvider<MerchantServiceImpl> merchantServiceSingletonObjectProvider = new SingletonObjectProvider<>(new MerchantServiceImpl());
+        store.register("duplicate", DuplicateCalculatorServiceImpl.class, duplicateCalculatorServiceSingletonObjectProvider);
+        store.register("merchant", MerchantServiceImpl.class, merchantServiceSingletonObjectProvider);
 
         List<ObjectProvider<?>> providers = store.getAll();
 
         assertNotNull(providers);
         assertEquals(2, providers.size());
+        assertEquals(providers.get(0), duplicateCalculatorServiceSingletonObjectProvider);
+        assertEquals(providers.get(1), merchantServiceSingletonObjectProvider);
     }
 
     @Test
@@ -72,21 +76,6 @@ class ProviderStoreImplTest {
         Integer providers = store.count();
 
         assertEquals(2, providers);
-    }
-
-    @Test
-    void should_returnAllProvidersRegisteredOrderedByRegistration() {
-        SingletonObjectProvider<DuplicateCalculatorServiceImpl> duplicateCalculatorServiceSingletonObjectProvider = new SingletonObjectProvider<>(new DuplicateCalculatorServiceImpl());
-        SingletonObjectProvider<MerchantServiceImpl> merchantServiceSingletonObjectProvider = new SingletonObjectProvider<>(new MerchantServiceImpl());
-        store.register("duplicate", DuplicateCalculatorServiceImpl.class, duplicateCalculatorServiceSingletonObjectProvider);
-        store.register("merchant", MerchantServiceImpl.class, merchantServiceSingletonObjectProvider);
-
-        List<ObjectProvider<?>> providers = store.getAllOrdered();
-
-        assertNotNull(providers);
-        assertEquals(2, providers.size());
-        assertEquals(providers.get(0), duplicateCalculatorServiceSingletonObjectProvider);
-        assertEquals(providers.get(1), merchantServiceSingletonObjectProvider);
     }
 
     @Test

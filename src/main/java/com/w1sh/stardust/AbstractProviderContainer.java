@@ -216,7 +216,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
                 .sorted(Comparator.comparing(o -> Types.getPriority(o.getClass())))
                 .toList();
         logger.debug("Invoking pre-destroy interceptors on all required providers");
-        List<ObjectProvider<?>> providers = providerStore.getAllOrdered();
+        List<ObjectProvider<?>> providers = providerStore.getAll();
         Collections.reverse(providers);
         for (ObjectProvider<?> objectProvider : providers) {
             for (Object instance : objectProvider.instances()) {

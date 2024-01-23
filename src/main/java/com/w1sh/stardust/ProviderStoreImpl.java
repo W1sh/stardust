@@ -5,27 +5,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.synchronizedMap;
+import static java.util.Objects.requireNonNull;
 
 public class ProviderStoreImpl implements ProviderStore {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderStoreImpl.class);
 
-    private final Map<String, Class<?>> classes = new ConcurrentHashMap<>(256);
-    private final Map<String, ObjectProvider<?>> named = new ConcurrentHashMap<>(256);
-    private final Deque<String> registrationOrder = new ArrayDeque<>(256);
+    private final Map<Key, ObjectProvider<?>> providers = synchronizedMap(new LinkedHashMap<>(256));
 
     private boolean allowOverride = true;
     private boolean ignoreOverride = false;
 
     @Override
     public <T> void register(String name, Class<T> clazz, ObjectProvider<T> provider) {
-        Objects.requireNonNull(name, "Cannot register provider with null name");
-        Objects.requireNonNull(clazz, "Cannot register provider with null class");
-        Objects.requireNonNull(provider, "Cannot register provider with null provider");
+        requireNonNull(name, "Cannot register provider with null name");
+        requireNonNull(clazz, "Cannot register provider with null class");
+        requireNonNull(provider, "Cannot register provider with null provider");
 
-        if (named.containsKey(name)) {
+        if (providers.containsKey(new Key(name, null))) {
             if (!allowOverride) {
                 throw ProviderRegistrationException.notAllowedName(name);
             }
@@ -35,26 +35,24 @@ public class ProviderStoreImpl implements ProviderStore {
                 logger.warn("If you would like to ignore warnings on these kind of scenarios, set the property \"stardust.providers.ignore-override\" to true");
             }
         }
-        classes.put(name, clazz);
-        named.put(name, provider);
-        registrationOrder.add(name);
+        providers.put(new Key(name, clazz), provider);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> ObjectProvider<T> get(String name) {
-        Objects.requireNonNull(name, "Cannot get provider with null name");
-        return (ObjectProvider<T>) named.get(name);
+        requireNonNull(name, "Cannot get provider with null name");
+        return (ObjectProvider<T>) providers.get(new Key(name, null));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<ObjectProvider<T>> get(Class<T> clazz) {
-        Objects.requireNonNull(clazz, "Cannot get provider with null class");
+        requireNonNull(clazz, "Cannot get provider with null class");
         List<ObjectProvider<T>> list = new ArrayList<>();
-        for (Map.Entry<String, Class<?>> entry : classes.entrySet()) {
-            if (clazz.isAssignableFrom(entry.getValue())) {
-                ObjectProvider<?> value = named.get(entry.getKey());
+        for (Map.Entry<Key, ObjectProvider<?>> entry : providers.entrySet()) {
+            if (clazz.isAssignableFrom(entry.getKey().clazz)) {
+                ObjectProvider<?> value = providers.get(entry.getKey());
                 list.add((ObjectProvider<T>) value);
             }
         }
@@ -63,30 +61,25 @@ public class ProviderStoreImpl implements ProviderStore {
 
     @Override
     public Set<Class<?>> getAllClasses() {
-        return Set.copyOf(classes.values());
+        return providers.keySet().stream()
+                .map(Key::clazz)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public List<ObjectProvider<?>> getAll() {
-        return named.values().stream().toList();
-    }
-
-    @Override
-    public List<ObjectProvider<?>> getAllOrdered() {
-        return registrationOrder.stream().map(named::get).collect(Collectors.toCollection(ArrayList::new));
+        return providers.values().stream().toList();
     }
 
     @Override
     public Integer count() {
-        return named.size();
+        return providers.size();
     }
 
     @Override
     public void clear() {
-        logger.debug("Clearing all {} providers from store", named.size());
-        named.clear();
-        registrationOrder.clear();
-        classes.clear();
+        logger.debug("Clearing all {} providers from store", providers.size());
+        providers.clear();
     }
 
     public void setAllowOverride(boolean allowOverride) {
@@ -95,5 +88,20 @@ public class ProviderStoreImpl implements ProviderStore {
 
     public void setIgnoreOverride(boolean ignoreOverride) {
         this.ignoreOverride = ignoreOverride;
+    }
+
+    private record Key(String name, Class<?> clazz) {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Key key = (Key) o;
+            return Objects.equals(name, key.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
     }
 }

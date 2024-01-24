@@ -10,7 +10,5 @@ public @interface Property {
 
     String value();
 
-    boolean isArray() default false;
-
     String arraySeparator() default ",";
 }

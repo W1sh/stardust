@@ -9,6 +9,7 @@ import com.w1sh.stardust.exception.ProviderInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -20,14 +21,18 @@ public class ParameterResolver {
     private static final Logger logger = LoggerFactory.getLogger(ParameterResolver.class);
 
     private static final Map<Type, Function<ObjectProvider<?>, ? extends Binding<?>>> bindingResolvers = new ConcurrentHashMap<>(8);
+    private static final Map<Class<?>, Function<String, ?>> propertyTypeResolvers = new ConcurrentHashMap<>(8);
     private final ProviderContainer container;
     private final PropertiesRegistry registry;
 
     public ParameterResolver(ProviderContainer container, PropertiesRegistry registry) {
         this.container = container;
         this.registry = registry;
-        this.addBindingResolver(Lazy.class, LazyBinding::of);
-        this.addBindingResolver(Provider.class, ProviderBinding::of);
+        bindingResolvers.put(Lazy.class, LazyBinding::of);
+        bindingResolvers.put(Provider.class, ProviderBinding::of);
+        propertyTypeResolvers.put(Boolean.class, Boolean::parseBoolean);
+        propertyTypeResolvers.put(Integer.class, Integer::parseInt);
+        propertyTypeResolvers.put(Double.class, Double::parseDouble);
     }
 
     public <T extends Binding<?>> void addBindingResolver(Class<T> bindingClass, Function<ObjectProvider<?>, T> bindingResolver) {
@@ -37,17 +42,8 @@ public class ParameterResolver {
     public Object resolve(ResolvableParameter<?> parameter) {
         Objects.requireNonNull(parameter);
         if (parameter.isAnnotationPresent(Property.class)) {
-            if (parameter.getActualType().equals(String.class)) {
-                return registry.getProperty(parameter.getAnnotation(Property.class).value(), "");
-            }
-            if (parameter.getActualType().equals(String[].class) && parameter.getAnnotation(Property.class).isArray()) {
-                return resolveArrayProperty(parameter);
-            }
-            logger.error("Cannot resolve property as {}.", parameter.getActualType());
-            throw ProviderInitializationException.invalidPropertyType();
-        }
-
-        if (Collection.class.isAssignableFrom(parameter.getActualType()) && parameter.isAnnotationPresent(Introspect.class)) {
+            return resolveProperty(parameter);
+        } else if (Collection.class.isAssignableFrom(parameter.getActualType()) && parameter.isAnnotationPresent(Introspect.class)) {
             return resolveCollection(parameter);
         } else if (parameter.getActualType().isArray() && parameter.isAnnotationPresent(Introspect.class)) {
             return resolveArrayType(parameter);
@@ -58,10 +54,27 @@ public class ParameterResolver {
         }
     }
 
-    private Object resolveArrayProperty(ResolvableParameter<?> parameter) {
+    @SuppressWarnings("SuspiciousSystemArraycopy")
+    private Object resolveProperty(ResolvableParameter<?> parameter) {
         Property property = parameter.getAnnotation(Property.class);
-        String propertyValue = registry.getProperty(property.value());
-        return propertyValue.split(property.arraySeparator());
+        String propertyValue = registry.getProperty(property.value(), "");
+
+        if (parameter.getActualType().equals(String.class)) {
+            return propertyValue;
+        } else if (propertyTypeResolvers.containsKey(parameter.getActualType())) {
+            return propertyTypeResolvers.get(parameter.getActualType()).apply(propertyValue);
+        } else if (parameter.getActualType().equals(String[].class)) {
+            return propertyValue.split(property.arraySeparator());
+        } else if (parameter.getActualType().isArray() && propertyTypeResolvers.containsKey(parameter.getActualType().getComponentType())) {
+            Object[] values = Arrays.stream(propertyValue.split(property.arraySeparator()))
+                    .map(s -> propertyTypeResolvers.get(parameter.getActualType().getComponentType()).apply(s))
+                    .toArray();
+            Object typedArray = Array.newInstance(parameter.getActualType().getComponentType(), values.length);
+            System.arraycopy(values, 0, typedArray, 0, values.length);
+            return typedArray;
+        }
+        logger.error("Cannot resolve property as {}.", parameter.getActualType());
+        throw ProviderInitializationException.invalidPropertyType();
     }
 
     private Object resolveObject(ResolvableParameter<?> parameter) {

@@ -203,10 +203,37 @@ class ParameterResolverTest {
     }
 
     @Test
+    void should_resolvePropertyAsDeclaredType_whenResolverExistsForType() {
+        final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+        when(registry.getProperty("test.value", "")).thenReturn("1");
+
+        Object resolved = resolver.resolve(constructor.getParameters().get(2));
+
+        assertNotNull(resolved);
+        assertEquals(1, resolved);
+    }
+
+    @Test
+    void should_resolvePropertyAsDeclaredArrayType_whenParameterIsArrayAndResolverExistsForType() {
+        final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
+        ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
+        when(registry.getProperty("test.value", "")).thenReturn("1,2,3");
+
+        Object resolved = resolver.resolve(constructor.getParameters().get(4));
+
+        assertNotNull(resolved);
+        assertEquals(1, ((Integer[]) resolved)[0]);
+        assertEquals(2, ((Integer[]) resolved)[1]);
+        assertEquals(3, ((Integer[]) resolved)[2]);
+    }
+
+
+    @Test
     void should_resolveProperty_whenParameterIsStringArrayAndPropertyIsPresentInRegistry() {
         final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
-        when(registry.getProperty("test.value-array")).thenReturn("test1,test2,test3");
+        when(registry.getProperty("test.value-array", "")).thenReturn("test1,test2,test3");
 
         Object resolved = resolver.resolve(constructor.getParameters().get(1));
 
@@ -217,10 +244,10 @@ class ParameterResolverTest {
     }
 
     @Test
-    void should_throwProviderInitializationException_whenParameterIsNotString() {
+    void should_throwProviderInitializationException_whenParameterIsNotResolvable() {
         final var injectConstructor = Constructors.getInjectConstructor(PropertyDependantService.class);
         ResolvableConstructorImpl<?> constructor = new ResolvableConstructorImpl<>(injectConstructor);
 
-        assertThrows(ProviderInitializationException.class, () -> resolver.resolve(constructor.getParameters().get(2)));
+        assertThrows(ProviderInitializationException.class, () -> resolver.resolve(constructor.getParameters().get(3)));
     }
 }

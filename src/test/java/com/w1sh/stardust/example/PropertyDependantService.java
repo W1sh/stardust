@@ -7,6 +7,8 @@ public class PropertyDependantService {
 
     @Inject
     public PropertyDependantService(@Property("test.value") String value,
-                                    @Property(value = "test.value-array", isArray = true) String[] arrayValue,
-                                    @Property(value = "test.value") Integer intValue) {}
+                                    @Property("test.value-array") String[] arrayValue,
+                                    @Property("test.value") Integer intValue,
+                                    @Property("test.value") Exception e,
+                                    @Property("test.value") Integer[] intValues) {}
 }

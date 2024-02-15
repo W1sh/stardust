@@ -6,9 +6,9 @@ public class ProviderRegistrationException extends RuntimeException {
         super(message);
     }
 
-    public static ProviderRegistrationException notAllowedClass(Class<?> clazz) {
-        return new ProviderRegistrationException(String.format("Failed to register provider for class %s as another " +
-                "provider for same class is already present and overriding is not allowed", clazz.getSimpleName()));
+    public static ProviderRegistrationException malformedProbe(Class<?> clazz) {
+        return new ProviderRegistrationException(String.format("Failed to register probe of type %s" +
+                " as no @Probe annotation is present in the class", clazz.getSimpleName()));
     }
 
     public static ProviderRegistrationException notAllowedName(String name) {

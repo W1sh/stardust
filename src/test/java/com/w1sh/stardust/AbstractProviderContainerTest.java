@@ -12,6 +12,10 @@ import com.w1sh.stardust.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.DuplicateCalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.MerchantServiceImpl;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
+import com.w1sh.stardust.exception.ProviderRegistrationException;
+import com.w1sh.stardust.health.HealthProbe;
+import com.w1sh.stardust.health.ProbeResult;
+import com.w1sh.stardust.health.probe.ApplicationHealthProbe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -299,6 +303,30 @@ class AbstractProviderContainerTest {
 
         assertNotNull(allInterceptorsOfType);
         assertEquals(1, allInterceptorsOfType.size());
+    }
+
+    @Test
+    void should_throwProviderRegistrationException_whenRegisteringProbeWithNoAnnotation() {
+        assertThrows(ProviderRegistrationException.class, () -> registry.register(MalformedProbe.class));
+    }
+
+    @Test
+    void should_returnProbeInstance_whenRegisteringAnnotatedProbe() {
+        registry.register(ApplicationHealthProbe.class);
+
+        ApplicationHealthProbe instance = registry.instance(ApplicationHealthProbe.class);
+
+        assertNotNull(instance);
+    }
+
+    private static class MalformedProbe implements HealthProbe {
+
+        public MalformedProbe() {}
+
+        @Override
+        public ProbeResult probe() {
+            return ProbeResult.down();
+        }
     }
 
     @Module

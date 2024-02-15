@@ -7,6 +7,9 @@ import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.configuration.PropertiesRegistry;
 import com.w1sh.stardust.configuration.PropertiesRegistryImpl;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
+import com.w1sh.stardust.exception.ProviderRegistrationException;
+import com.w1sh.stardust.health.HealthProbe;
+import com.w1sh.stardust.health.Probe;
 import com.w1sh.stardust.naming.DefaultNamingStrategy;
 import com.w1sh.stardust.naming.NamingStrategy;
 import com.w1sh.stardust.util.Constructors;
@@ -47,6 +50,13 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
 
     public void register(Class<?> clazz) {
         Objects.requireNonNull(clazz);
+
+        if (HealthProbe.class.isAssignableFrom(clazz)) {
+            if (!clazz.isAnnotationPresent(Probe.class)) {
+                throw ProviderRegistrationException.malformedProbe(clazz);
+            }
+        }
+
         final var constructor = new ResolvableConstructorImpl<>(Constructors.getInjectConstructor(clazz));
         register(constructor);
 

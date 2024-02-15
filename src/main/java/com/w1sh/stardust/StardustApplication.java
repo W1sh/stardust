@@ -1,11 +1,15 @@
 package com.w1sh.stardust;
 
+import com.w1sh.stardust.health.Probe;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.configuration.PropertyValuePostConstructInterceptor;
 import com.w1sh.stardust.configuration.StardustConfiguration;
 import com.w1sh.stardust.dependency.*;
 import com.w1sh.stardust.dependency.DependencyResolver.EvaluationPhase;
 import com.w1sh.stardust.exception.ComponentCreationException;
+import com.w1sh.stardust.health.HealthProbe;
+import com.w1sh.stardust.health.HealthProbeProcessor;
+import com.w1sh.stardust.health.HealthProbeProcessorImpl;
 import com.w1sh.stardust.naming.NamingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +51,13 @@ public class StardustApplication {
         }
         StardustApplicationInitializer initializer = new StardustApplicationInitializer(configuration);
         initializer.initialize(sources);
+
+        List<HealthProbe> healthProbes = initializer.container.instances(HealthProbe.class);
+        HealthProbeProcessor probeProcessor = initializer.container.instance(HealthProbeProcessor.class);
+        healthProbes.forEach(probe -> {
+            Probe annotation = probe.getClass().getAnnotation(Probe.class);
+            probeProcessor.register(probe, annotation.delay(), annotation.period());
+        });
     }
 
     static class StardustApplicationInitializer {
@@ -66,6 +77,7 @@ public class StardustApplication {
             this.resolvers = new SetValueEnumMap<>(EvaluationPhase.class);
             this.environment = new Environment(container, new HashSet<>());
 
+            container.register(HealthProbeProcessorImpl.class);
             internalInterceptors().forEach(container::register);
             internalResolvers().forEach(container::register);
             container.register(configuration.getPropertiesRegistry());

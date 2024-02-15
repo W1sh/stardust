@@ -39,11 +39,6 @@ public class HealthProbeProcessorImpl implements HealthProbeProcessor {
     }
 
     @Override
-    public void register(HealthProbe healthProbe) {
-        register(healthProbe, 1, 1);
-    }
-
-    @Override
     public void register(HealthProbe healthProbe, long delay, long period) {
         probes.add(healthProbe);
         probeSchedules.put(healthProbe, new HealthProbeSchedule(delay, period));

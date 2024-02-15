@@ -8,8 +8,6 @@ public interface HealthProbeProcessor {
 
     List<ProbeResult> getLatestProbeResults();
 
-    void register(HealthProbe healthProbe);
-
     void register(HealthProbe healthProbe, long delay, long period);
 
     void remove(HealthProbe healthProbe);

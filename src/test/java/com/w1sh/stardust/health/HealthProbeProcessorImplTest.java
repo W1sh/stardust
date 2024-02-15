@@ -20,12 +20,11 @@ class HealthProbeProcessorImplTest {
         final var delay = 10L;
         final var period = 60L;
         processor.register(new TestHealthProbe(), delay, period);
-        processor.register(new TestHealthProbe());
 
         List<HealthProbe> probes = processor.getAll();
 
         assertNotNull(probes);
-        assertEquals(2, probes.size());
+        assertEquals(1, probes.size());
     }
 
     @Test
@@ -41,7 +40,7 @@ class HealthProbeProcessorImplTest {
 
     @Test
     void should_scheduleProbe_whenProbeIsRegisteredWithDefaultDelayAndPeriod() {
-        processor.register(new TestHealthProbe());
+        processor.register(new TestHealthProbe(), 1L, 1L);
 
         processor.initializeHealthChecks();
 
@@ -51,7 +50,7 @@ class HealthProbeProcessorImplTest {
     @Test
     void should_removeProbe_whenProbeIsRegistered() {
         final var testHealthProbe = new TestHealthProbe();
-        processor.register(testHealthProbe);
+        processor.register(testHealthProbe, 1L, 1L);
 
         processor.remove(testHealthProbe);
     }
@@ -60,7 +59,7 @@ class HealthProbeProcessorImplTest {
 
         @Override
         public ProbeResult probe() {
-            return new ProbeResult(ProbeResult.Status.UP) {};
+            return ProbeResult.up();
         }
     }
 }

@@ -35,6 +35,15 @@ class PropertyValuePostConstructInterceptorTest {
         assertThrows(PropertyValueSettingException.class, () -> interceptor.intercept(propertyClass));
     }
 
+    @Test
+    void should_throwPropertyValueSettingException_whenKeyIsPresentInRegistryButFieldHasNoSetterMethod() {
+        PropertyClass propertyClass = new PropertyClass();
+        when(registry.getProperty("application.version")).thenReturn("1");
+        when(registry.getProperty("application.profile")).thenReturn("test");
+
+        assertThrows(PropertyValueSettingException.class, () -> interceptor.intercept(propertyClass));
+    }
+
     public static class PropertyClass {
 
         @Property("application.name")
@@ -43,5 +52,16 @@ class PropertyValuePostConstructInterceptorTest {
         @Required
         @Property("application.version")
         private String version;
+
+        @Property("application.profile")
+        private String profile;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
     }
 }

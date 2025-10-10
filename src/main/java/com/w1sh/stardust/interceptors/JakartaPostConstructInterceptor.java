@@ -1,4 +1,4 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.interceptors;
 
 import com.w1sh.stardust.exception.PostConstructInvocationException;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 @Priority(998)
-public class JakartaPostConstructInterceptor implements InvocationInterceptor {
+public record JakartaPostConstructInterceptor() implements InvocationInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(JakartaPostConstructInterceptor.class);
 

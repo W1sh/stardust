@@ -1,4 +1,4 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.util;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

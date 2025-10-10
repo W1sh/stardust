@@ -1,12 +1,11 @@
 package com.w1sh.stardust;
 
-import com.w1sh.stardust.InvocationInterceptor.InvocationType;
+import com.w1sh.stardust.interceptors.InvocationInterceptor;
+import com.w1sh.stardust.interceptors.InvocationInterceptor.InvocationType;
 import com.w1sh.stardust.annotation.Module;
 import com.w1sh.stardust.annotation.Primary;
 import com.w1sh.stardust.annotation.Provide;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
-import com.w1sh.stardust.naming.DefaultNamingStrategy;
-import com.w1sh.stardust.naming.NamingStrategy;
 import com.w1sh.stardust.util.Constructors;
 import com.w1sh.stardust.util.Types;
 import org.slf4j.Logger;
@@ -25,7 +24,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     private final ParameterResolver resolver;
 
     protected AbstractProviderContainer(NamingStrategy namingStrategy) {
-        this.namingStrategy = Objects.requireNonNullElseGet(namingStrategy, DefaultNamingStrategy::new);
+        this.namingStrategy = Objects.requireNonNullElseGet(namingStrategy, NamingStrategy.Default::new);
         this.providerStore = new ProviderStoreImpl();
         this.resolver = new ParameterResolver(this);
         this.interceptors = new SetValueEnumMap<>(InvocationType.class);
@@ -38,7 +37,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
     }
 
     public static AbstractProviderContainer base() {
-        return new DefaultProviderContainer(new DefaultNamingStrategy());
+        return new DefaultProviderContainer(new NamingStrategy.Default());
     }
 
     public void register(Class<?> clazz) {

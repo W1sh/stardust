@@ -1,7 +1,6 @@
-package com.w1sh.stardust.configuration;
+package com.w1sh.stardust.interceptors;
 
-import com.w1sh.stardust.InvocationInterceptor;
-import com.w1sh.stardust.annotation.Inject;
+import com.w1sh.stardust.configuration.PropertiesRegistry;
 import com.w1sh.stardust.annotation.Property;
 import com.w1sh.stardust.annotation.Required;
 import com.w1sh.stardust.exception.PropertyValueSettingException;
@@ -11,16 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
-public class PropertyValuePostConstructInterceptor implements InvocationInterceptor {
+public record PropertyValuePostConstructInterceptor(PropertiesRegistry registry) implements InvocationInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyValuePostConstructInterceptor.class);
-
-    private final PropertiesRegistry registry;
-
-    @Inject
-    public PropertyValuePostConstructInterceptor(PropertiesRegistry registry) {
-        this.registry = registry;
-    }
 
     @Override
     public void intercept(Object instance) {

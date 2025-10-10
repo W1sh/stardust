@@ -1,4 +1,4 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.interceptors;
 
 import org.junit.jupiter.api.Test;
 

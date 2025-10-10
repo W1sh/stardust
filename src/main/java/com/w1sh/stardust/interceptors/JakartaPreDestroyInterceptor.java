@@ -1,6 +1,6 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.interceptors;
 
-public class JakartaPreDestroyInterceptor implements InvocationInterceptor {
+public record JakartaPreDestroyInterceptor() implements InvocationInterceptor {
 
     @Override
     public void intercept(Object instance) {

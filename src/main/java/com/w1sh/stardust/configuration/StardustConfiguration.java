@@ -3,8 +3,7 @@ package com.w1sh.stardust.configuration;
 import com.w1sh.stardust.AbstractProviderContainer;
 import com.w1sh.stardust.ProviderContainer;
 import com.w1sh.stardust.StardustApplication;
-import com.w1sh.stardust.naming.DefaultNamingStrategy;
-import com.w1sh.stardust.naming.NamingStrategy;
+import com.w1sh.stardust.NamingStrategy;
 
 public class StardustConfiguration {
 
@@ -18,7 +17,7 @@ public class StardustConfiguration {
         return new StardustConfiguration()
                 .withRegistry(AbstractProviderContainer.class)
                 .withPropertiesRegistry(PropertiesRegistryImpl.class)
-                .withNamingStrategy(DefaultNamingStrategy.class);
+                .withNamingStrategy(NamingStrategy.Default.class);
     }
 
     public StardustConfiguration withRegistry(Class<? extends ProviderContainer> registry) {

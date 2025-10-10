@@ -1,7 +1,9 @@
-package com.w1sh.stardust.configuration;
+package com.w1sh.stardust.interceptors;
 
 import com.w1sh.stardust.annotation.Property;
 import com.w1sh.stardust.annotation.Required;
+import com.w1sh.stardust.configuration.PropertiesRegistry;
+import com.w1sh.stardust.configuration.PropertiesRegistryImpl;
 import com.w1sh.stardust.exception.PropertyValueSettingException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

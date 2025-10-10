@@ -1,5 +1,7 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.interceptors;
 
+import com.w1sh.stardust.ParameterResolver;
+import com.w1sh.stardust.ResolvableParameterImpl;
 import com.w1sh.stardust.annotation.Inject;
 import com.w1sh.stardust.exception.PostConstructInvocationException;
 
@@ -9,12 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
 @Priority(999)
-public class SetterInjectionPostConstructInterceptor implements InvocationInterceptor {
-
-    private final ParameterResolver resolver;
-
-    @Inject
-    public SetterInjectionPostConstructInterceptor(ParameterResolver resolver) {this.resolver = resolver;}
+public record SetterInjectionPostConstructInterceptor(ParameterResolver resolver) implements InvocationInterceptor {
 
     @Override
     public void intercept(Object instance) {

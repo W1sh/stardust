@@ -1,4 +1,4 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.interceptors;
 
 /**
  * Interface to be implemented by invocation interceptors.

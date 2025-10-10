@@ -1,5 +1,7 @@
 package com.w1sh.stardust;
 
+import com.w1sh.stardust.interceptors.InvocationInterceptor;
+
 import java.util.List;
 
 public interface InterceptorAware {

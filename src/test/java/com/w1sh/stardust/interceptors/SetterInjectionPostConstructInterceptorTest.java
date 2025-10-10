@@ -1,5 +1,6 @@
-package com.w1sh.stardust;
+package com.w1sh.stardust.interceptors;
 
+import com.w1sh.stardust.ParameterResolver;
 import com.w1sh.stardust.annotation.Inject;
 import com.w1sh.stardust.example.service.MerchantService;
 import com.w1sh.stardust.example.service.impl.MerchantServiceImpl;

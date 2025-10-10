@@ -1,6 +1,8 @@
 package com.w1sh.stardust;
 
-import com.w1sh.stardust.InvocationInterceptor.InvocationType;
+import com.w1sh.stardust.interceptors.InvocationInterceptor;
+import com.w1sh.stardust.interceptors.InvocationInterceptor.InvocationType;
+import com.w1sh.stardust.interceptors.JakartaPostConstructInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -3,7 +3,7 @@ package com.w1sh.stardust;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-public interface Resolvable<S> {
+public sealed interface Resolvable<S> permits ResolvableExecutable, ResolvableParameter {
 
     Class<S> getActualType();
 

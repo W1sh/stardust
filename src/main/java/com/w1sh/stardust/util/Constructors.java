@@ -5,7 +5,7 @@ import com.w1sh.stardust.exception.ProviderRegistrationException;
 
 import java.lang.reflect.Constructor;
 
-public class Constructors {
+public final class Constructors {
 
     private Constructors() {}
 

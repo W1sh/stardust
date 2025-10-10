@@ -3,7 +3,7 @@ package com.w1sh.stardust.util;
 import javax.annotation.Priority;
 import java.lang.reflect.ParameterizedType;
 
-public class Types {
+public final class Types {
 
     private Types() {}
 

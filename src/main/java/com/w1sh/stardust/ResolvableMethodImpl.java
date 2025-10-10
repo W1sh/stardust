@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-public class ResolvableMethodImpl<S> implements ResolvableExecutable<S> {
+public final class ResolvableMethodImpl<S> implements ResolvableExecutable<S> {
 
     private final Method method;
     private final List<ResolvableParameter<?>> parameters;

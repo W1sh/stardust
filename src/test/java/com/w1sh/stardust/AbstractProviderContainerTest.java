@@ -84,7 +84,7 @@ class AbstractProviderContainerTest {
 
         assertNotNull(classes);
         assertEquals(1, classes.size());
-        assertEquals(CalculatorControllerImpl.class, classes.get(0));
+        assertEquals(CalculatorControllerImpl.class, classes.getFirst());
     }
 
     @Test

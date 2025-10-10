@@ -6,12 +6,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SetValueEnumMap<K extends Enum<K>, V> {
+public record SetValueEnumMap<K extends Enum<K>, V>(EnumMap<K, Set<V>> map) {
 
-    private final EnumMap<K, Set<V>> map;
-
-    public SetValueEnumMap(Class<K> clazz) {
-        this.map = new EnumMap<>(clazz);
+    public SetValueEnumMap(Class<K> map) {
+        this(new EnumMap<>(map));
     }
 
     public Set<V> get(K key) {

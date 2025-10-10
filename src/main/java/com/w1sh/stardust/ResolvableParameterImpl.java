@@ -9,7 +9,7 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.util.Set;
 
-public class ResolvableParameterImpl<S> implements ResolvableParameter<S> {
+public final class ResolvableParameterImpl<S> implements ResolvableParameter<S> {
 
     private final Parameter parameter;
 

@@ -3,7 +3,7 @@ package com.w1sh.stardust;
 import java.util.List;
 import java.util.Set;
 
-public interface ResolvableExecutable<S> extends Resolvable<S> {
+public sealed interface ResolvableExecutable<S> extends Resolvable<S> permits ResolvableConstructorImpl, ResolvableMethodImpl {
 
     Integer getPriority();
 

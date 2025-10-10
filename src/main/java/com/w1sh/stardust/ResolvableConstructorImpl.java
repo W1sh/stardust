@@ -14,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-public class ResolvableConstructorImpl<S> implements ResolvableExecutable<S> {
+public final class ResolvableConstructorImpl<S> implements ResolvableExecutable<S> {
 
     private static final Logger logger = LoggerFactory.getLogger(ResolvableConstructorImpl.class);
 

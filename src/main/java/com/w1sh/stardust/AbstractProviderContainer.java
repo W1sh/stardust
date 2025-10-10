@@ -102,7 +102,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
             logger.error("Expected 1 primary candidate but found {} for class {}", primaries.size(), clazz.getSimpleName());
             throw new ProviderCandidatesException(primaries.size(), clazz);
         }
-        return (ObjectProvider<T>) primaries.get(0);
+        return (ObjectProvider<T>) primaries.getFirst();
     }
 
     @Override
@@ -155,7 +155,7 @@ public abstract class AbstractProviderContainer implements ProviderContainer, In
             logger.error("Expected 1 candidate but found {} for class {}", candidates.size(), clazz.getSimpleName());
             throw new ProviderCandidatesException(candidates.size(), clazz);
         }
-        return candidates.isEmpty() ? null : candidates.get(0);
+        return candidates.isEmpty() ? null : candidates.getFirst();
     }
 
     @SuppressWarnings("unchecked")

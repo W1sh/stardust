@@ -19,7 +19,7 @@ public final class PrototypeObjectProvider<T> implements ObjectProvider<T> {
     public T singletonInstance() {
         if (instances.isEmpty()) {
             return newInstance();
-        } else return instances.get(0);
+        } else return instances.getFirst();
     }
 
     @Override

@@ -265,9 +265,7 @@ class AbstractProviderContainerTest {
     }
 
     @Module
-    private static class AnnotatedClass {
-
-        public AnnotatedClass() {}
+    public record AnnotatedClass() {
 
         @Primary
         @Profile("module")
@@ -282,9 +280,7 @@ class AbstractProviderContainerTest {
     }
 
     @Module
-    private static class ModuleTestingClass {
-
-        public ModuleTestingClass() {}
+    public record ModuleTestingClass() {
 
         @Provide
         public MerchantService service() {

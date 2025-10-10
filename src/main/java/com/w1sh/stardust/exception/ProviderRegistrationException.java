@@ -21,12 +21,17 @@ public class ProviderRegistrationException extends RuntimeException {
     }
 
     public static ProviderRegistrationException multipleConstructors(Class<?> clazz) {
+        return new ProviderRegistrationException(String.format("%s has multiple eligible constructors",
+                clazz.getSimpleName()));
+    }
+
+    public static ProviderRegistrationException multipleInjectConstructors(Class<?> clazz) {
         return new ProviderRegistrationException(String.format("%s has multiple constructors annotated with @Inject",
                 clazz.getSimpleName()));
     }
 
-    public static ProviderRegistrationException noConstructor(Class<?> clazz, Throwable e) {
-        return new ProviderRegistrationException(String.format("%s doesn't have a constructor annotated with @Inject" +
-                " or a no-arg constructor", clazz.getSimpleName()), e);
+    public static ProviderRegistrationException noDeclaredConstructors(Class<?> clazz) {
+        return new ProviderRegistrationException(String.format("%s doesn't have a any declared constructors and cannot" +
+                " be initialized. This is likely an interface, a primitive type, an array class, or void.", clazz.getSimpleName()));
     }
 }

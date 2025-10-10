@@ -33,7 +33,7 @@ class SetterInjectionPostConstructInterceptorTest {
 
         private MerchantService merchantService;
 
-        public SetterPostConstructClass() {}
+        public SetterPostConstructClass() {/* Test constructor */}
 
         @Inject
         public void setMerchantService(MerchantService merchantService) {

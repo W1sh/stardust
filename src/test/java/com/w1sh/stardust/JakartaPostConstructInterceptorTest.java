@@ -20,9 +20,9 @@ class JakartaPostConstructInterceptorTest {
 
     private static class PostConstructClass {
 
-        public PostConstructClass(){}
+        public PostConstructClass(){/* Test constructor */}
 
         @PostConstruct
-        public void init(){}
+        public void init(){/* Test method */}
     }
 }

@@ -7,5 +7,5 @@ import com.w1sh.stardust.example.service.CalculatorService;
 @Provide
 public class CalculatorServiceImpl implements CalculatorService {
     @Inject
-    public CalculatorServiceImpl() { }
+    public CalculatorServiceImpl() { /* Test constructor */ }
 }

@@ -25,7 +25,7 @@ class SystemPropertyDependencyResolverTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         System.clearProperty("test-flag");
     }
 

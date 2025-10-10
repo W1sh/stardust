@@ -6,6 +6,10 @@ public class ProviderRegistrationException extends RuntimeException {
         super(message);
     }
 
+    public ProviderRegistrationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     public static ProviderRegistrationException notAllowedClass(Class<?> clazz) {
         return new ProviderRegistrationException(String.format("Failed to register provider for class %s as another " +
                 "provider for same class is already present and overriding is not allowed", clazz.getSimpleName()));
@@ -21,8 +25,8 @@ public class ProviderRegistrationException extends RuntimeException {
                 clazz.getSimpleName()));
     }
 
-    public static ProviderRegistrationException noConstructor(Class<?> clazz) {
+    public static ProviderRegistrationException noConstructor(Class<?> clazz, Throwable e) {
         return new ProviderRegistrationException(String.format("%s doesn't have a constructor annotated with @Inject" +
-                " or a no-arg constructor", clazz.getSimpleName()));
+                " or a no-arg constructor", clazz.getSimpleName()), e);
     }
 }

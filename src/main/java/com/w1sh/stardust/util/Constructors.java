@@ -25,7 +25,7 @@ public class Constructors {
             try {
                 return clazz.getConstructor();
             } catch (NoSuchMethodException e) {
-                throw ProviderRegistrationException.noConstructor(clazz);
+                throw ProviderRegistrationException.noConstructor(clazz, e);
             }
         }
         return injectConstructor;

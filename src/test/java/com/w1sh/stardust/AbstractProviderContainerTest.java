@@ -12,7 +12,6 @@ import com.w1sh.stardust.example.service.impl.CalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.DuplicateCalculatorServiceImpl;
 import com.w1sh.stardust.example.service.impl.MerchantServiceImpl;
 import com.w1sh.stardust.exception.ProviderCandidatesException;
-import com.w1sh.stardust.exception.ProviderRegistrationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

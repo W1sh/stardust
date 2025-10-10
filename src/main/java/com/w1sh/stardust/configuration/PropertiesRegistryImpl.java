@@ -37,13 +37,11 @@ public class PropertiesRegistryImpl implements PropertiesRegistry {
     }
 
     public boolean isOverridingAllowed() {
-        boolean overridingAllowed = Boolean.parseBoolean(getProperty("stardust.properties.allow-override", "false"));
-        return Boolean.TRUE.equals(overridingAllowed);
+        return Boolean.parseBoolean(getProperty("stardust.properties.allow-override", "false"));
     }
 
     public boolean isOverridingIgnored() {
-        boolean overridingAllowed = Boolean.parseBoolean(getProperty("stardust.properties.ignore-override", "false"));
-        return Boolean.TRUE.equals(overridingAllowed);
+        return Boolean.parseBoolean(getProperty("stardust.properties.ignore-override", "false"));
     }
 
     private void warnOfPropertyOverride(Map<String, String> otherProperties) {
